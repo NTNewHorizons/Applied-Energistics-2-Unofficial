@@ -1,0 +1,63 @@
+name: Run functional tests
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  functional-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout mod repo
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Set up JDKs
+        uses: actions/setup-java@v5
+        with:
+          distribution: zulu
+          java-version: |
+            8
+            17
+            21
+            25
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v5
+        with:
+          validate-wrappers: true
+
+      - name: Grant execute permission for Gradle
+        run: chmod +x gradlew
+
+      - name: Set up the workspace
+        run: ./gradlew --build-cache --info --stacktrace setupCIWorkspace
+
+      - name: Run functional tests
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p run/server
+          echo "eula=true" > run/eula.txt
+          echo "eula=true" > run/server/eula.txt
+          echo "stop" > run/stop.txt
+          timeout 150 ./gradlew --build-cache --info --stacktrace runFunctionalTestServer < run/stop.txt 2>&1 | tee server.log
+
+      - name: Upload functional test reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: functional-test-reports
+          path: |
+            server.log
+            junit-out/
+            run/junit-out/
+            run/crash-reports/
+            run/server/crash-reports/
+          if-no-files-found: ignore
+          retention-days: 90

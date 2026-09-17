@@ -32,7 +32,6 @@ tasks.named("assemble").configure {
 
 def functionalTestRunProperty = "ae2.withFunctionalTests"
 def withFunctionalTests = providers.gradleProperty(functionalTestRunProperty).map { it.toBoolean() }.orElse(false).get()
-def isCi = providers.environmentVariable("CI").map { it.toBoolean() }.orElse(false).get()
 
 def addFunctionalTestsToRun = { JavaExec task ->
     task.dependsOn(functionalTestSet.jarTaskName)
@@ -53,10 +52,7 @@ tasks.register("runFunctionalTestClient", GradleBuild) {
     startParameter.projectProperties.put(functionalTestRunProperty, "true")
 }
 
-if (withFunctionalTests || isCi) {
-    tasks.named("runServer", JavaExec).configure(addFunctionalTestsToRun)
-}
-
 if (withFunctionalTests) {
+    tasks.named("runServer", JavaExec).configure(addFunctionalTestsToRun)
     tasks.named("runClient", JavaExec).configure(addFunctionalTestsToRun)
 }
