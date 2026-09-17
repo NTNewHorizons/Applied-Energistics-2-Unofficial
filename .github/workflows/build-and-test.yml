@@ -1,18 +1,17 @@
-
 name: Build and test
 
 on:
   pull_request:
-    branches: [ master, main ]
+    branches: [master, main]
 
   push:
-    branches: [ master, main ]
+    branches: [master, main]
 
 jobs:
   build-and-test:
-    uses: GTNewHorizons/GTNH-Actions-Workflows/.github/workflows/build-and-test.yml@master
+    uses: NTNewHorizons/NTNH-Actions-Workflows/.github/workflows/build-and-test.yml@master
     secrets: inherit
     with:
-     timeout: 150
-     horizonqa: true
-     external-deps-inclusion: true
+      timeout: 150
+      horizonqa: true
+      external-deps-inclusion: true

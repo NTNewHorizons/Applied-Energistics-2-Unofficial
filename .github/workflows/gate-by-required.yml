@@ -2,9 +2,9 @@ name: Check state of other required PRs
 
 on:
   pull_request:
-    branches: [ master, main, release/** ]
+    branches: [master, main, release/**]
 
 jobs:
   check-required-prs:
-    uses: GTNewHorizons/GTNH-Actions-Workflows/.github/workflows/gate-by-required.yml@master
+    uses: NTNewHorizons/NTNH-Actions-Workflows/.github/workflows/gate-by-required.yml@master
     secrets: inherit
