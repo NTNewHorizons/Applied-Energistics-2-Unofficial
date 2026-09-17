@@ -91,6 +91,7 @@ public enum MaterialType {
     CardFakeCrafting(66),
     CardSuperluminalSpeed(67),
     CardDistribution(69),
+    CardNBTFilter(70),
 
     Cell2SpatialPart(32, AEFeature.SpatialIO),
     Cell16SpatialPart(33, AEFeature.SpatialIO),
@@ -119,7 +120,7 @@ public enum MaterialType {
 
     Singularity(47, AEFeature.QuantumNetworkBridge, EntitySingularity.class),
     QESingularity(48, AEFeature.QuantumNetworkBridge, EntitySingularity.class);
-    // the last meta is 69
+    // the last meta is 70
 
     public static final MaterialType[] VALUES = values();
     private final EnumSet<AEFeature> features;

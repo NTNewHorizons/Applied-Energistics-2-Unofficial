@@ -130,6 +130,7 @@ public final class ItemMultiMaterial extends AEBaseItem implements IStorageCompo
     public Upgrades getType(final ItemStack itemstack) {
         return switch (this.getTypeByStack(itemstack)) {
             case CardOreFilter -> Upgrades.ORE_FILTER;
+            case CardNBTFilter -> Upgrades.NBT_FILTER;
             case CardPatternCapacity -> Upgrades.PATTERN_CAPACITY;
             case CardCapacity -> Upgrades.CAPACITY;
             case CardFuzzy -> Upgrades.FUZZY;
@@ -263,7 +264,9 @@ public final class ItemMultiMaterial extends AEBaseItem implements IStorageCompo
             if (mat.getDamageValue() != -1) {
                 final ItemStack what = new ItemStack(this, 1, mat.getDamageValue());
                 if (this.getTypeByStack(what) != MaterialType.InvalidType) {
-                    final String tex = "appliedenergistics2:" + this.nameOf(what);
+                    final String tex = mat == MaterialType.CardNBTFilter
+                            ? "appliedenergistics2:ItemMaterial.CardOreFilter"
+                            : "appliedenergistics2:" + this.nameOf(what);
                     mat.setIIcon(icoRegister.registerIcon(tex));
                 }
             }

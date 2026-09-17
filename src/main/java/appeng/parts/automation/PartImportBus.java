@@ -195,6 +195,18 @@ public class PartImportBus extends PartBaseImportBus<IAEItemStack> implements II
     protected boolean doOreDict(final Object myTarget, IMEMonitor<IAEItemStack> inv, final IEnergyGrid energy,
             final FuzzyMode fzMode) {
         if (!(myTarget instanceof InventoryAdaptor myAdaptor)) return false;
+        if (this.getInstalledUpgrades(Upgrades.NBT_FILTER) > 0) {
+            if (this.nbtFilterConfig.getFilters().isEmpty()) return false;
+            for (final ItemSlot slot : myAdaptor) {
+                if (this.itemToSend <= 0) break;
+                if (slot.isExtractable() && this.nbtFilterConfig.matches(slot.getItemStack())) {
+                    while (this.itemToSend > 0) {
+                        if (this.importStuff(myAdaptor, slot.getAEItemStack(), inv, energy, fzMode)) break;
+                    }
+                }
+            }
+            return true;
+        }
         if (!oreFilterString.isEmpty()) {
             if (filterPredicate == null) filterPredicate = OreFilteredList.makeFilter(oreFilterString);
             for (ItemSlot slot : myAdaptor) {

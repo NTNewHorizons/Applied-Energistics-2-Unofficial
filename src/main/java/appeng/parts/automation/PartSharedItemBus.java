@@ -35,6 +35,7 @@ import appeng.api.storage.data.IAEStack;
 import appeng.api.storage.data.IAEStackType;
 import appeng.api.util.IConfigManager;
 import appeng.core.sync.GuiBridge;
+import appeng.helpers.INBTFilterable;
 import appeng.helpers.IOreFilterable;
 import appeng.hooks.TickHandler;
 import appeng.me.GridAccessException;
@@ -42,11 +43,12 @@ import appeng.tile.inventory.IAEStackInventory;
 import appeng.tile.inventory.IIAEStackInventory;
 import appeng.util.InventoryAdaptor;
 import appeng.util.Platform;
+import appeng.util.nbt.NBTFilterConfig;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
 public abstract class PartSharedItemBus<StackType extends IAEStack<StackType>> extends PartUpgradeable
-        implements IGridTickable, IOreFilterable, IIAEStackInventory {
+        implements IGridTickable, IOreFilterable, INBTFilterable, IIAEStackInventory {
 
     private final IAEStackInventory config = new IAEStackInventory(this, 9);
     private int cachedAdaptorHash = 0;
@@ -55,6 +57,7 @@ public abstract class PartSharedItemBus<StackType extends IAEStack<StackType>> e
     private boolean pendingStateUpdate = false;
     protected String oreFilterString = "";
     protected Predicate<IAEItemStack> filterPredicate = null;
+    protected final NBTFilterConfig nbtFilterConfig = new NBTFilterConfig();
     protected final BaseActionSource mySrc;
 
     public PartSharedItemBus(final ItemStack is) {
@@ -85,6 +88,7 @@ public abstract class PartSharedItemBus<StackType extends IAEStack<StackType>> e
         super.readFromNBT(extra);
         this.config.readFromNBT(extra, "config");
         this.oreFilterString = extra.getString("filter");
+        this.nbtFilterConfig.readFromNBT(extra);
     }
 
     @Override
@@ -92,6 +96,7 @@ public abstract class PartSharedItemBus<StackType extends IAEStack<StackType>> e
         super.writeToNBT(extra);
         this.config.writeToNBT(extra, "config");
         extra.setString("filter", this.oreFilterString);
+        this.nbtFilterConfig.writeToNBT(extra);
     }
 
     @Override
@@ -209,6 +214,18 @@ public abstract class PartSharedItemBus<StackType extends IAEStack<StackType>> e
     public void setFilter(String filter) {
         oreFilterString = filter;
         filterPredicate = null;
+    }
+
+    @Override
+    public NBTFilterConfig getNBTFilterConfig() {
+        return this.nbtFilterConfig;
+    }
+
+    @Override
+    public void setNBTFilterConfig(final NBTFilterConfig config) {
+        this.nbtFilterConfig.replaceWith(config);
+        if (this.getHost() != null) this.getHost().markForSave();
+        this.updateState();
     }
 
     @Override

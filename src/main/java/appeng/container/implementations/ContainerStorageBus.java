@@ -160,7 +160,9 @@ public class ContainerStorageBus extends ContainerUpgradeable implements IVirtua
 
     @Override
     public boolean isSlotEnabled(final int idx) {
-        if (this.getUpgradeable().getInstalledUpgrades(Upgrades.ORE_FILTER) > 0) return false;
+        if (this.getUpgradeable().getInstalledUpgrades(Upgrades.ORE_FILTER) > 0
+                || this.getUpgradeable().getInstalledUpgrades(Upgrades.NBT_FILTER) > 0)
+            return false;
 
         final int upgrades = this.getUpgradeable().getInstalledUpgrades(Upgrades.CAPACITY);
 

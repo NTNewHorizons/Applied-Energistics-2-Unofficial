@@ -54,6 +54,7 @@ public abstract class GuiUpgradeable extends AEBaseGui {
     protected GuiImgButton fuzzyMode;
     protected GuiImgButton craftMode;
     protected GuiImgButton oreFilter;
+    protected GuiImgButton nbtFilter;
 
     public GuiUpgradeable(final ContainerUpgradeable te) {
         super(te);
@@ -104,11 +105,17 @@ public abstract class GuiUpgradeable extends AEBaseGui {
                 this.guiTop + 28,
                 Settings.ACTIONS,
                 ActionItems.ORE_FILTER);
+        this.nbtFilter = new GuiImgButton(
+                this.guiLeft - 38,
+                this.guiTop + 28,
+                Settings.ACTIONS,
+                ActionItems.NBT_FILTER);
 
         this.buttonList.add(this.craftMode);
         this.buttonList.add(this.redstoneMode);
         this.buttonList.add(this.fuzzyMode);
         this.buttonList.add(this.oreFilter);
+        this.buttonList.add(this.nbtFilter);
     }
 
     @Override
@@ -173,7 +180,8 @@ public abstract class GuiUpgradeable extends AEBaseGui {
         if (this.fuzzyMode != null) {
             this.fuzzyMode.setVisibility(
                     this.bc.getInstalledUpgrades(Upgrades.FUZZY) > 0
-                            && this.bc.getInstalledUpgrades(Upgrades.ORE_FILTER) == 0);
+                            && this.bc.getInstalledUpgrades(Upgrades.ORE_FILTER) == 0
+                            && this.bc.getInstalledUpgrades(Upgrades.NBT_FILTER) == 0);
         }
         if (this.craftMode != null) {
             this.craftMode.setVisibility(this.bc.getInstalledUpgrades(Upgrades.CRAFTING) > 0);
@@ -181,6 +189,9 @@ public abstract class GuiUpgradeable extends AEBaseGui {
 
         if (this.oreFilter != null) {
             this.oreFilter.setVisibility(this.bc.getInstalledUpgrades(Upgrades.ORE_FILTER) > 0);
+        }
+        if (this.nbtFilter != null) {
+            this.nbtFilter.setVisibility(this.bc.getInstalledUpgrades(Upgrades.NBT_FILTER) > 0);
         }
     }
 
@@ -279,6 +290,9 @@ public abstract class GuiUpgradeable extends AEBaseGui {
 
         if (btn == this.oreFilter) {
             NetworkHandler.instance.sendToServer(new PacketSwitchGuis(GuiBridge.GUI_ORE_FILTER));
+        }
+        if (btn == this.nbtFilter) {
+            NetworkHandler.instance.sendToServer(new PacketSwitchGuis(GuiBridge.GUI_NBT_FILTER));
         }
     }
 }

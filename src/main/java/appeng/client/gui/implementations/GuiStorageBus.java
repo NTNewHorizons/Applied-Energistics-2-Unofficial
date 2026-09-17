@@ -90,6 +90,11 @@ public class GuiStorageBus extends GuiUpgradeable {
                 this.guiTop + 108,
                 Settings.ACTIONS,
                 ActionItems.ORE_FILTER);
+        this.nbtFilter = new GuiImgButton(
+                this.guiLeft - 38,
+                this.guiTop + 108,
+                Settings.ACTIONS,
+                ActionItems.NBT_FILTER);
 
         this.buttonList.add(
                 this.priority = new GuiTabButton(
@@ -106,6 +111,7 @@ public class GuiStorageBus extends GuiUpgradeable {
         this.buttonList.add(this.partition);
         this.buttonList.add(this.clear);
         this.buttonList.add(this.oreFilter);
+        this.buttonList.add(this.nbtFilter);
     }
 
     @Override
@@ -157,7 +163,7 @@ public class GuiStorageBus extends GuiUpgradeable {
         super.drawBG(offsetX, offsetY, mouseX, mouseY);
 
         final boolean isOreDict = this.containerStorageBus.getUpgradeable().getInstalledUpgrades(Upgrades.ORE_FILTER)
-                > 0;
+                > 0 || this.containerStorageBus.getUpgradeable().getInstalledUpgrades(Upgrades.NBT_FILTER) > 0;
         final int capacity = isOreDict ? 0
                 : this.containerStorageBus.getUpgradeable().getInstalledUpgrades(Upgrades.CAPACITY);
 
@@ -227,7 +233,7 @@ public class GuiStorageBus extends GuiUpgradeable {
 
     protected void updateSlotVisibility() {
         final boolean isOreDict = this.containerStorageBus.getUpgradeable().getInstalledUpgrades(Upgrades.ORE_FILTER)
-                > 0;
+                > 0 || this.containerStorageBus.getUpgradeable().getInstalledUpgrades(Upgrades.NBT_FILTER) > 0;
         final int capacity = isOreDict ? -2
                 : this.containerStorageBus.getUpgradeable().getInstalledUpgrades(Upgrades.CAPACITY);
 

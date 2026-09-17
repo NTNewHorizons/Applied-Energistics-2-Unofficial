@@ -92,7 +92,8 @@ public abstract class PartBaseExportBus<StackType extends IAEStack<StackType>> e
             final SchedulingMode schedulingMode = (SchedulingMode) this.getConfigManager()
                     .getSetting(Settings.SCHEDULING_MODE);
 
-            if (this.getInstalledUpgrades(Upgrades.ORE_FILTER) == 0) {
+            if (this.getInstalledUpgrades(Upgrades.ORE_FILTER) == 0
+                    && this.getInstalledUpgrades(Upgrades.NBT_FILTER) == 0) {
                 int x;
 
                 for (x = 0; x < this.availableSlots() && this.itemToSend > 0; x++) {

@@ -77,6 +77,7 @@ import appeng.core.settings.TickRates;
 import appeng.core.stats.Achievements;
 import appeng.core.sync.GuiBridge;
 import appeng.helpers.IInterfaceHost;
+import appeng.helpers.INBTFilterable;
 import appeng.helpers.Reflected;
 import appeng.hooks.TickHandler;
 import appeng.integration.IntegrationType;
@@ -90,14 +91,16 @@ import appeng.tile.inventory.IAEStackInventory;
 import appeng.transformer.annotations.Integration.Method;
 import appeng.util.IterationCounter;
 import appeng.util.Platform;
+import appeng.util.nbt.NBTFilterConfig;
 import appeng.util.prioitylist.FuzzyPriorityList;
+import appeng.util.prioitylist.NBTFilteredList;
 import appeng.util.prioitylist.OreFilteredList;
 import appeng.util.prioitylist.PrecisePriorityList;
 import buildcraft.api.transport.IPipeTile.PipeType;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-public class PartStorageBus extends PartUpgradeable implements IStorageBus {
+public class PartStorageBus extends PartUpgradeable implements IStorageBus, INBTFilterable {
 
     private static final String NBT_FILTER = "filter";
 
@@ -129,6 +132,7 @@ public class PartStorageBus extends PartUpgradeable implements IStorageBus {
     private boolean pendingDelayedCacheReset = false;
     private String oreFilterString = "";
     private String previousOreFilterString = "";
+    private final NBTFilterConfig nbtFilterConfig = new NBTFilterConfig();
 
     /**
      * used to read changes once when the list of extractable items was changed
@@ -155,6 +159,7 @@ public class PartStorageBus extends PartUpgradeable implements IStorageBus {
             if (tag.hasKey(NBT_FILTER)) {
                 previousOreFilterString = tag.getString(NBT_FILTER);
             }
+            this.nbtFilterConfig.readFromNBT(tag);
             if (tag.hasKey("filterCache")) {
                 NBTTagCompound tagCompound = tag.getCompoundTag("filterCache");
                 readFilterCache(tagCompound);
@@ -181,6 +186,7 @@ public class PartStorageBus extends PartUpgradeable implements IStorageBus {
             if (!this.config.isEmpty()) this.config.writeToNBT(tag, "config");
             if (this.priority != 0) tag.setInteger("priority", this.priority);
             if (!this.oreFilterString.isEmpty()) tag.setString(NBT_FILTER, this.oreFilterString);
+            this.nbtFilterConfig.writeToNBT(tag);
 
             final NBTTagCompound tagCompound = new NBTTagCompound();
             writeFilterCache(tagCompound);
@@ -299,6 +305,7 @@ public class PartStorageBus extends PartUpgradeable implements IStorageBus {
         this.config.readFromNBT(data, "config");
         this.priority = data.getInteger("priority");
         this.oreFilterString = data.getString(NBT_FILTER);
+        this.nbtFilterConfig.readFromNBT(data);
         final NBTTagCompound filterCacheTag = data.getCompoundTag("filterCache");
         if (data.hasKey("customName")) this.setCustomName(data.getString("customName"));
         readFilterCache(filterCacheTag);
@@ -310,6 +317,7 @@ public class PartStorageBus extends PartUpgradeable implements IStorageBus {
         this.config.writeToNBT(data, "config");
         data.setInteger("priority", this.priority);
         data.setString(NBT_FILTER, this.oreFilterString);
+        this.nbtFilterConfig.writeToNBT(data);
         final NBTTagCompound tagCompound = new NBTTagCompound();
         if (this.hasCustomName()) data.setString("customName", this.getCustomName());
         writeFilterCache(tagCompound);
@@ -687,8 +695,9 @@ public class PartStorageBus extends PartUpgradeable implements IStorageBus {
                     }
 
                     final boolean hasOreFilter = this.getInstalledUpgrades(Upgrades.ORE_FILTER) > 0;
+                    final boolean hasNBTFilter = this.getInstalledUpgrades(Upgrades.NBT_FILTER) > 0;
 
-                    if (!hasOreFilter) {
+                    if (!hasOreFilter && !hasNBTFilter) {
                         final IItemList priorityList = getItemList();
 
                         final int slotsToUse = 18 + this.getInstalledUpgrades(Upgrades.CAPACITY) * 9;
@@ -716,6 +725,10 @@ public class PartStorageBus extends PartUpgradeable implements IStorageBus {
                             this.handler.setPartitionList(partitionList);
                             this.handler.setExtractPartitionList(partitionList);
                         }
+                    } else if (hasNBTFilter) {
+                        final NBTFilteredList partitionList = new NBTFilteredList(this.nbtFilterConfig);
+                        this.handler.setPartitionList(partitionList);
+                        this.handler.setExtractPartitionList(partitionList);
                     } else {
                         OreFilteredList partitionList = new OreFilteredList(oreFilterString);
                         this.handler.setPartitionList(partitionList);
@@ -814,6 +827,18 @@ public class PartStorageBus extends PartUpgradeable implements IStorageBus {
         oreFilterString = filter;
         previousOreFilterString = filter;
         resetCache(true);
+    }
+
+    @Override
+    public NBTFilterConfig getNBTFilterConfig() {
+        return this.nbtFilterConfig;
+    }
+
+    @Override
+    public void setNBTFilterConfig(final NBTFilterConfig config) {
+        this.nbtFilterConfig.replaceWith(config);
+        if (this.getHost() != null) this.getHost().markForSave();
+        this.resetCache(true);
     }
 
     @Override
