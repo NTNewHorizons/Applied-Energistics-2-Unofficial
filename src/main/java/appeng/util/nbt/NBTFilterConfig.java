@@ -18,6 +18,7 @@ public final class NBTFilterConfig {
     private NBTFilterMode mode = NBTFilterMode.ALL;
     private final List<NBTFilterEntry> filters = new ArrayList<>();
     private CompiledNBTFilterEntry[] compiledFilters = new CompiledNBTFilterEntry[0];
+    private boolean hasInvalidFilters;
 
     public NBTFilterMode getMode() {
         return this.mode;
@@ -80,11 +81,17 @@ public final class NBTFilterConfig {
 
     public void rebuildCompiledFilters() {
         final List<CompiledNBTFilterEntry> compiled = new ArrayList<>(this.filters.size());
+        boolean hasInvalidFilters = false;
         for (final NBTFilterEntry entry : this.filters) {
             final CompiledNBTFilterEntry compiledEntry = CompiledNBTFilterEntry.compile(entry);
-            if (compiledEntry != null) compiled.add(compiledEntry);
+            if (compiledEntry != null) {
+                compiled.add(compiledEntry);
+            } else {
+                hasInvalidFilters = true;
+            }
         }
         this.compiledFilters = compiled.toArray(new CompiledNBTFilterEntry[0]);
+        this.hasInvalidFilters = hasInvalidFilters;
     }
 
     public boolean matches(final ItemStack stack) {
@@ -92,7 +99,10 @@ public final class NBTFilterConfig {
     }
 
     public boolean matches(final NBTTagCompound root) {
+        if (this.filters.isEmpty()) return false;
+
         if (this.mode == NBTFilterMode.ALL) {
+            if (this.hasInvalidFilters) return false;
             for (final CompiledNBTFilterEntry filter : this.compiledFilters) {
                 if (!filter.matches(root)) return false;
             }

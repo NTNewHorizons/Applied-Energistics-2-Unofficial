@@ -56,12 +56,34 @@ public class NBTFilterConfigTest {
     }
 
     @Test
-    public void invalidAndIncompleteRowsAreExcludedWithoutThrowing() {
+    public void invalidAndIncompleteRowsFailAllMode() {
+        final NBTTagCompound root = new NBTTagCompound();
+        root.setTag("value", new NBTTagInt(1));
+        final NBTFilterConfig config = config("value", NBTComparison.EQUALS, "1");
+        config.addFilter(new NBTFilterEntry("bad..path", NBTComparison.EQUALS, "1"));
+        config.addFilter(new NBTFilterEntry("value", NBTComparison.EQUALS, ""));
+        assertFalse(config.matches(root));
+    }
+
+    @Test
+    public void invalidRowsAreFalseButAnyModeCanMatchAnotherRow() {
         final NBTTagCompound root = new NBTTagCompound();
         root.setTag("value", new NBTTagInt(1));
         final NBTFilterConfig config = config("bad..path", NBTComparison.EQUALS, "1");
-        config.addFilter(new NBTFilterEntry("value", NBTComparison.EQUALS, ""));
+        config.addFilter(new NBTFilterEntry("value", NBTComparison.EQUALS, "1"));
+        config.setMode(NBTFilterMode.ANY);
         assertTrue(config.matches(root));
+
+        config.updateFilter(1, "value", NBTComparison.EQUALS, "2");
+        assertFalse(config.matches(root));
+    }
+
+    @Test
+    public void emptyFilterConfigurationNeverMatches() {
+        final NBTFilterConfig config = new NBTFilterConfig();
+        assertFalse(config.matches(new NBTTagCompound()));
+        config.setMode(NBTFilterMode.ANY);
+        assertFalse(config.matches(new NBTTagCompound()));
     }
 
     @Test
