@@ -264,9 +264,7 @@ public final class ItemMultiMaterial extends AEBaseItem implements IStorageCompo
             if (mat.getDamageValue() != -1) {
                 final ItemStack what = new ItemStack(this, 1, mat.getDamageValue());
                 if (this.getTypeByStack(what) != MaterialType.InvalidType) {
-                    final String tex = mat == MaterialType.CardNBTFilter
-                            ? "appliedenergistics2:ItemMaterial.CardOreFilter"
-                            : "appliedenergistics2:" + this.nameOf(what);
+                    final String tex = "appliedenergistics2:" + this.nameOf(what);
                     mat.setIIcon(icoRegister.registerIcon(tex));
                 }
             }

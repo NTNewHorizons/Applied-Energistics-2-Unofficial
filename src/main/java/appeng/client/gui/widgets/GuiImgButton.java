@@ -657,7 +657,7 @@ public class GuiImgButton extends GuiButton implements ITooltip {
                     ButtonToolTips.OreFilter,
                     ButtonToolTips.OreFilterHint);
             this.registerApp(
-                    70,
+                    75,
                     Settings.ACTIONS,
                     ActionItems.NBT_FILTER,
                     ButtonToolTips.NBTFilter,
