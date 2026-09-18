@@ -42,6 +42,7 @@ dependencies {
     compileOnly("com.github.GTNewHorizons:InventoryBogoSorter:1.3.50-GTNH:dev")
 
     testImplementation('junit:junit:4.12')
+    testRuntimeOnly('org.lwjgl.lwjgl:lwjgl:2.9.4-nightly-20150209')
     functionalTestImplementation(platform('org.junit:junit-bom:5.9.2'))
     functionalTestImplementation('org.junit.jupiter:junit-jupiter')
     functionalTestImplementation('org.junit.platform:junit-platform-engine')
