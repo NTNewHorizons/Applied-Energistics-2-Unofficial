@@ -104,13 +104,7 @@ public class GuiNBTFilter extends GuiSub {
 
         int y = TEXTURE_TOP_HEIGHT;
         for (int row = 0; row < this.rows.size(); row++) {
-            this.drawTexturedModalRect(
-                    offsetX,
-                    offsetY + y,
-                    0,
-                    TEXTURE_TOP_HEIGHT,
-                    this.xSize,
-                    TEXTURE_ROW_HEIGHT);
+            this.drawTexturedModalRect(offsetX, offsetY + y, 0, TEXTURE_TOP_HEIGHT, this.xSize, TEXTURE_ROW_HEIGHT);
             y += TEXTURE_ROW_HEIGHT;
         }
 
