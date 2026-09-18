@@ -95,7 +95,7 @@ public class GuiNBTFilter extends GuiSub {
         if (this.controlsDirty || this.observedRevision != this.containerNBTFilter.getRevision()) {
             this.rebuildControls();
         }
-        this.bindTexture("guis/renamer.png");
+        this.bindTexture("guis/nbtFilter.png");
         this.drawTexturedModalRect(offsetX, offsetY, 0, 0, this.xSize, this.ySize);
         for (final FilterRow row : this.rows) {
             row.pathField.drawTextBox();
