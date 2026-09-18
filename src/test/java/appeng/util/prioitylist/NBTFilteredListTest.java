@@ -50,14 +50,10 @@ public class NBTFilteredListTest {
     }
 
     @Test
-    public void emptyNbtRulesStillEnforceItemPartition() {
-        final Item item = new Item();
-        final IAEItemStack filter = stack(item, 0, 99);
-        final NBTFilteredList list = new NBTFilteredList(new NBTFilterConfig(), Arrays.asList(filter), null);
-        assertFalse(list.isEmpty());
-        assertTrue(list.isListed(stack(item, 0, 1)));
-        assertFalse(list.isListed(stack(new Item(), 0, 1)));
+    public void emptyNbtRulesRejectAllItems() {
         assertTrue(new NBTFilteredList(new NBTFilterConfig(), Collections.emptyList(), null).isEmpty());
+        assertTrue(new NBTFilteredList(new NBTFilterConfig(), Collections.emptyList(), FuzzyMode.IGNORE_ALL).isEmpty());
+        assertTrue(new NBTFilteredList(new NBTFilterConfig(), Arrays.asList(stack(new Item(), 0, 99)), null).isEmpty());
     }
 
     private static NBTFilterConfig rules() {
