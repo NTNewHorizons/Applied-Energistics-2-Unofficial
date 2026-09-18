@@ -26,6 +26,10 @@ public class GuiNBTFilter extends GuiSub {
     private static final int ROW_HEIGHT = 14;
     private static final int ROW_CONTROL_OFFSET = 4;
     private static final int ROW_CONTROL_HEIGHT = 12;
+    private static final int TEXTURE_TOP_HEIGHT = 33;
+    private static final int TEXTURE_ROW_HEIGHT = 14;
+    private static final int TEXTURE_BOTTOM_Y = TEXTURE_TOP_HEIGHT + TEXTURE_ROW_HEIGHT;
+    private static final int TEXTURE_HEIGHT = 61;
 
     private final ContainerNBTFilter containerNBTFilter;
     private final List<FilterRow> rows = new ArrayList<>();
@@ -96,7 +100,27 @@ public class GuiNBTFilter extends GuiSub {
             this.rebuildControls();
         }
         this.bindTexture("guis/nbtFilter.png");
-        this.drawTexturedModalRect(offsetX, offsetY, 0, 0, this.xSize, this.ySize);
+        this.drawTexturedModalRect(offsetX, offsetY, 0, 0, this.xSize, TEXTURE_TOP_HEIGHT);
+
+        int y = TEXTURE_TOP_HEIGHT;
+        for (int row = 0; row < this.rows.size(); row++) {
+            this.drawTexturedModalRect(
+                    offsetX,
+                    offsetY + y,
+                    0,
+                    TEXTURE_TOP_HEIGHT,
+                    this.xSize,
+                    TEXTURE_ROW_HEIGHT);
+            y += TEXTURE_ROW_HEIGHT;
+        }
+
+        this.drawTexturedModalRect(
+                offsetX,
+                offsetY + y,
+                0,
+                TEXTURE_BOTTOM_Y,
+                this.xSize,
+                TEXTURE_HEIGHT - TEXTURE_BOTTOM_Y);
         for (final FilterRow row : this.rows) {
             row.pathField.drawTextBox();
             row.valueField.drawTextBox();
