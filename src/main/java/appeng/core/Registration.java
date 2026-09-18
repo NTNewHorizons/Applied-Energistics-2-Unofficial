@@ -648,6 +648,7 @@ public final class Registration {
         Upgrades.SUPERSPEED.registerItem(parts.importBus(), 4);
         Upgrades.SUPERLUMINALSPEED.registerItem(parts.importBus(), 4);
         Upgrades.ORE_FILTER.registerItem(parts.importBus(), 1);
+        Upgrades.NBT_FILTER.registerItem(parts.importBus(), 1);
 
         // Export Bus
         Upgrades.FUZZY.registerItem(parts.exportBus(), 1);
@@ -658,6 +659,7 @@ public final class Registration {
         Upgrades.SUPERLUMINALSPEED.registerItem(parts.exportBus(), 4);
         Upgrades.CRAFTING.registerItem(parts.exportBus(), 1);
         Upgrades.ORE_FILTER.registerItem(parts.exportBus(), 1);
+        Upgrades.NBT_FILTER.registerItem(parts.exportBus(), 1);
 
         // Storage Cells
         Upgrades.FUZZY.registerItem(items.cell1k(), 1);
@@ -763,6 +765,7 @@ public final class Registration {
         Upgrades.INVERTER.registerItem(parts.storageBus(), 1);
         Upgrades.CAPACITY.registerItem(parts.storageBus(), 5);
         Upgrades.ORE_FILTER.registerItem(parts.storageBus(), 1);
+        Upgrades.NBT_FILTER.registerItem(parts.storageBus(), 1);
         Upgrades.STICKY.registerItem(parts.storageBus(), 1);
 
         // Formation Plane

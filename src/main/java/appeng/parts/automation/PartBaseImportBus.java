@@ -129,7 +129,8 @@ public abstract class PartBaseImportBus<StackType extends IAEStack<StackType>> e
                 final IEnergyGrid energy = this.getProxy().getEnergy();
 
                 boolean configured = false;
-                if (this.getInstalledUpgrades(Upgrades.ORE_FILTER) == 0) {
+                if (this.getInstalledUpgrades(Upgrades.ORE_FILTER) == 0
+                        && this.getInstalledUpgrades(Upgrades.NBT_FILTER) == 0) {
                     for (int x = 0; x < this.availableSlots(); x++) {
                         final StackType ais = (StackType) this.getAEInventoryByName(StorageName.CONFIG)
                                 .getAEStackInSlot(x);

@@ -155,6 +155,8 @@ public enum ButtonToolTips implements Localization {
     SchedulingModeRandom,
     OreFilter,
     OreFilterHint,
+    NBTFilter,
+    NBTFilterHint,
     DoublePattern,
     DoublePatternHint,
     DoublePatterns,

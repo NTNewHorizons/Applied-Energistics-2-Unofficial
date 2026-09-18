@@ -16,6 +16,10 @@ public interface IPartitionList<T extends IAEStack<T>> {
 
     boolean isListed(T input);
 
+    /**
+     * Returns whether this partition is inactive and may be bypassed by callers. This does not indicate that the
+     * partition currently matches no entries; an active partition that rejects every entry must return {@code false}.
+     */
     boolean isEmpty();
 
     Iterable<T> getItems();

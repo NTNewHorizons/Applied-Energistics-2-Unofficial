@@ -45,6 +45,7 @@ import appeng.core.sync.packets.PacketMockExplosion;
 import appeng.core.sync.packets.PacketMonitorableAction;
 import appeng.core.sync.packets.PacketMonitorableTypeFilter;
 import appeng.core.sync.packets.PacketMultiPart;
+import appeng.core.sync.packets.PacketNBTFilterConfig;
 import appeng.core.sync.packets.PacketNEIBookmark;
 import appeng.core.sync.packets.PacketNEIRecipe;
 import appeng.core.sync.packets.PacketNetworkStatusSelected;
@@ -164,7 +165,8 @@ public class AppEngPacketHandlerBase {
         PACKET_SUPER_WIRELESS_TOOL_COMMAND(PacketWirelessToolCommand.class),
         PACKET_CRAFTING_DIAGNOSTIC_RESET(PacketCraftingDiagnosticReset.class),
         PACKET_HIGHLIGHT_ITEM_FLOW(PacketHighlightItemFlow.class),
-        PACKET_FLOW_RATES(PacketFlowRates.class);
+        PACKET_FLOW_RATES(PacketFlowRates.class),
+        PACKET_NBT_FILTER_CONFIG(PacketNBTFilterConfig.class);
 
         private final Class<? extends AppEngPacket> packetClass;
         private final Constructor<? extends AppEngPacket> packetConstructor;

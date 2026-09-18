@@ -117,7 +117,7 @@ public class PartImportBus extends PartBaseImportBus<IAEItemStack> implements II
         final int toSend = this.calculateMaximumAmountToImport(adaptor, whatToImport, inv, fzMode);
         final ItemStack newItems;
 
-        if (this.getInstalledUpgrades(Upgrades.FUZZY) > 0) {
+        if (this.getInstalledUpgrades(Upgrades.FUZZY) > 0 && this.getInstalledUpgrades(Upgrades.NBT_FILTER) == 0) {
             newItems = adaptor.removeSimilarItems(
                     toSend,
                     whatToImport == null ? null : whatToImport.getItemStack(),
@@ -171,7 +171,7 @@ public class PartImportBus extends PartBaseImportBus<IAEItemStack> implements II
 
         final IAEItemStack itemAmountNotStorable;
         final ItemStack simResult;
-        if (this.getInstalledUpgrades(Upgrades.FUZZY) > 0) {
+        if (this.getInstalledUpgrades(Upgrades.FUZZY) > 0 && this.getInstalledUpgrades(Upgrades.NBT_FILTER) == 0) {
             simResult = myAdaptor.simulateSimilarRemove(toSend, itemStackToImport, fzMode, this.configDestination(inv));
         } else {
             simResult = myAdaptor.simulateRemove(toSend, itemStackToImport, this.configDestination(inv));
@@ -195,6 +195,17 @@ public class PartImportBus extends PartBaseImportBus<IAEItemStack> implements II
     protected boolean doOreDict(final Object myTarget, IMEMonitor<IAEItemStack> inv, final IEnergyGrid energy,
             final FuzzyMode fzMode) {
         if (!(myTarget instanceof InventoryAdaptor myAdaptor)) return false;
+        if (this.getInstalledUpgrades(Upgrades.NBT_FILTER) > 0) {
+            for (final ItemSlot slot : myAdaptor) {
+                if (this.itemToSend <= 0) break;
+                if (slot.isExtractable() && this.matchesNBTItemFilter(slot.getAEItemStack())) {
+                    while (this.itemToSend > 0) {
+                        if (this.importStuff(myAdaptor, slot.getAEItemStack(), inv, energy, fzMode)) break;
+                    }
+                }
+            }
+            return true;
+        }
         if (!oreFilterString.isEmpty()) {
             if (filterPredicate == null) filterPredicate = OreFilteredList.makeFilter(oreFilterString);
             for (ItemSlot slot : myAdaptor) {

@@ -83,6 +83,7 @@ import appeng.container.implementations.ContainerLevelEmitter;
 import appeng.container.implementations.ContainerMAC;
 import appeng.container.implementations.ContainerMEMonitorable;
 import appeng.container.implementations.ContainerMEPortableCell;
+import appeng.container.implementations.ContainerNBTFilter;
 import appeng.container.implementations.ContainerNetworkStatus;
 import appeng.container.implementations.ContainerNetworkTool;
 import appeng.container.implementations.ContainerOptimizePatterns;
@@ -112,6 +113,7 @@ import appeng.core.stats.Achievements;
 import appeng.helpers.ICellRestriction;
 import appeng.helpers.ICustomNameObject;
 import appeng.helpers.IInterfaceHost;
+import appeng.helpers.INBTFilterable;
 import appeng.helpers.IOreFilterable;
 import appeng.helpers.IPriorityHost;
 import appeng.helpers.WirelessTerminalGuiObject;
@@ -256,6 +258,8 @@ public enum GuiBridge implements IGuiHandler {
     GUI_RENAMER(ContainerRenamer.class, ICustomNameObject.class, GuiHostType.WORLD, SecurityPermissions.BUILD),
 
     GUI_ORE_FILTER(ContainerOreFilter.class, IOreFilterable.class, GuiHostType.ITEM_OR_WORLD, null),
+
+    GUI_NBT_FILTER(ContainerNBTFilter.class, INBTFilterable.class, GuiHostType.ITEM_OR_WORLD, null),
 
     GUI_CELL_RESTRICTION(ContainerCellRestriction.class, ICellRestriction.class, GuiHostType.ITEM_OR_WORLD, null),
 
