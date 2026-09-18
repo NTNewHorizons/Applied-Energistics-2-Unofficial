@@ -180,8 +180,7 @@ public abstract class GuiUpgradeable extends AEBaseGui {
         if (this.fuzzyMode != null) {
             this.fuzzyMode.setVisibility(
                     this.bc.getInstalledUpgrades(Upgrades.FUZZY) > 0
-                            && this.bc.getInstalledUpgrades(Upgrades.ORE_FILTER) == 0
-                            && this.bc.getInstalledUpgrades(Upgrades.NBT_FILTER) == 0);
+                            && this.bc.getInstalledUpgrades(Upgrades.ORE_FILTER) == 0);
         }
         if (this.craftMode != null) {
             this.craftMode.setVisibility(this.bc.getInstalledUpgrades(Upgrades.CRAFTING) > 0);

@@ -97,8 +97,7 @@ public class GuiBusIO extends GuiUpgradeable {
         super.drawBG(offsetX, offsetY, mouseX, mouseY);
 
         final int capacity = this.cvb.getUpgradeable().getInstalledUpgrades(Upgrades.CAPACITY);
-        final boolean hasOreFilter = this.cvb.getUpgradeable().getInstalledUpgrades(Upgrades.ORE_FILTER) != 0
-                || this.cvb.getUpgradeable().getInstalledUpgrades(Upgrades.NBT_FILTER) != 0;
+        final boolean hasOreFilter = this.cvb.getUpgradeable().getInstalledUpgrades(Upgrades.ORE_FILTER) != 0;
         final boolean hasFirstTier = capacity > 0;
         final boolean hasSecondTier = capacity > 1;
 
@@ -117,8 +116,7 @@ public class GuiBusIO extends GuiUpgradeable {
         super.handleButtonVisibility();
 
         final int capacity = this.cvb.getUpgradeable().getInstalledUpgrades(Upgrades.CAPACITY);
-        final boolean hasOreFilter = this.cvb.getUpgradeable().getInstalledUpgrades(Upgrades.ORE_FILTER) != 0
-                || this.cvb.getUpgradeable().getInstalledUpgrades(Upgrades.NBT_FILTER) != 0;
+        final boolean hasOreFilter = this.cvb.getUpgradeable().getInstalledUpgrades(Upgrades.ORE_FILTER) != 0;
         final boolean firstTier = capacity > 0 && !hasOreFilter;
         final boolean secondTier = capacity > 1 && !hasOreFilter;
 

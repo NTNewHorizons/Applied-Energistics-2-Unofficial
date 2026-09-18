@@ -163,7 +163,7 @@ public class GuiStorageBus extends GuiUpgradeable {
         super.drawBG(offsetX, offsetY, mouseX, mouseY);
 
         final boolean isOreDict = this.containerStorageBus.getUpgradeable().getInstalledUpgrades(Upgrades.ORE_FILTER)
-                > 0 || this.containerStorageBus.getUpgradeable().getInstalledUpgrades(Upgrades.NBT_FILTER) > 0;
+                > 0;
         final int capacity = isOreDict ? 0
                 : this.containerStorageBus.getUpgradeable().getInstalledUpgrades(Upgrades.CAPACITY);
 
@@ -233,7 +233,7 @@ public class GuiStorageBus extends GuiUpgradeable {
 
     protected void updateSlotVisibility() {
         final boolean isOreDict = this.containerStorageBus.getUpgradeable().getInstalledUpgrades(Upgrades.ORE_FILTER)
-                > 0 || this.containerStorageBus.getUpgradeable().getInstalledUpgrades(Upgrades.NBT_FILTER) > 0;
+                > 0;
         final int capacity = isOreDict ? -2
                 : this.containerStorageBus.getUpgradeable().getInstalledUpgrades(Upgrades.CAPACITY);
 

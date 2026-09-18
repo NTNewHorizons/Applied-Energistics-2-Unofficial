@@ -117,7 +117,7 @@ public class PartImportBus extends PartBaseImportBus<IAEItemStack> implements II
         final int toSend = this.calculateMaximumAmountToImport(adaptor, whatToImport, inv, fzMode);
         final ItemStack newItems;
 
-        if (this.getInstalledUpgrades(Upgrades.FUZZY) > 0) {
+        if (this.getInstalledUpgrades(Upgrades.FUZZY) > 0 && this.getInstalledUpgrades(Upgrades.NBT_FILTER) == 0) {
             newItems = adaptor.removeSimilarItems(
                     toSend,
                     whatToImport == null ? null : whatToImport.getItemStack(),
@@ -171,7 +171,7 @@ public class PartImportBus extends PartBaseImportBus<IAEItemStack> implements II
 
         final IAEItemStack itemAmountNotStorable;
         final ItemStack simResult;
-        if (this.getInstalledUpgrades(Upgrades.FUZZY) > 0) {
+        if (this.getInstalledUpgrades(Upgrades.FUZZY) > 0 && this.getInstalledUpgrades(Upgrades.NBT_FILTER) == 0) {
             simResult = myAdaptor.simulateSimilarRemove(toSend, itemStackToImport, fzMode, this.configDestination(inv));
         } else {
             simResult = myAdaptor.simulateRemove(toSend, itemStackToImport, this.configDestination(inv));
@@ -196,10 +196,9 @@ public class PartImportBus extends PartBaseImportBus<IAEItemStack> implements II
             final FuzzyMode fzMode) {
         if (!(myTarget instanceof InventoryAdaptor myAdaptor)) return false;
         if (this.getInstalledUpgrades(Upgrades.NBT_FILTER) > 0) {
-            if (this.nbtFilterConfig.getFilters().isEmpty()) return false;
             for (final ItemSlot slot : myAdaptor) {
                 if (this.itemToSend <= 0) break;
-                if (slot.isExtractable() && this.nbtFilterConfig.matches(slot.getItemStack())) {
+                if (slot.isExtractable() && this.matchesNBTItemFilter(slot.getAEItemStack())) {
                     while (this.itemToSend > 0) {
                         if (this.importStuff(myAdaptor, slot.getAEItemStack(), inv, energy, fzMode)) break;
                     }

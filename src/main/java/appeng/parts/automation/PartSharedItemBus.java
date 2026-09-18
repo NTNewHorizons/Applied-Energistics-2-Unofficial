@@ -44,6 +44,7 @@ import appeng.tile.inventory.IIAEStackInventory;
 import appeng.util.InventoryAdaptor;
 import appeng.util.Platform;
 import appeng.util.nbt.NBTFilterConfig;
+import appeng.util.nbt.NBTItemFilterMatcher;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
@@ -214,6 +215,23 @@ public abstract class PartSharedItemBus<StackType extends IAEStack<StackType>> e
     public void setFilter(String filter) {
         oreFilterString = filter;
         filterPredicate = null;
+    }
+
+    protected boolean matchesNBTItemFilter(final IAEItemStack stack) {
+        if (stack == null) return false;
+        final FuzzyMode mode = this.getInstalledUpgrades(Upgrades.FUZZY) > 0
+                ? (FuzzyMode) this.getConfigManager().getSetting(Settings.FUZZY_MODE)
+                : null;
+        boolean configured = false;
+        for (int i = 0; i < this.availableSlots(); i++) {
+            if (this.config.getAEStackInSlot(i) instanceof IAEItemStack filter) {
+                configured = true;
+                if (NBTItemFilterMatcher.matchesItem(filter, stack, mode)) {
+                    return this.nbtFilterConfig.matches(stack.getItemStack());
+                }
+            }
+        }
+        return !configured && this.nbtFilterConfig.matches(stack.getItemStack());
     }
 
     @Override

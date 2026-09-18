@@ -697,7 +697,7 @@ public class PartStorageBus extends PartUpgradeable implements IStorageBus, INBT
                     final boolean hasOreFilter = this.getInstalledUpgrades(Upgrades.ORE_FILTER) > 0;
                     final boolean hasNBTFilter = this.getInstalledUpgrades(Upgrades.NBT_FILTER) > 0;
 
-                    if (!hasOreFilter && !hasNBTFilter) {
+                    if (!hasOreFilter || hasNBTFilter) {
                         final IItemList priorityList = getItemList();
 
                         final int slotsToUse = 18 + this.getInstalledUpgrades(Upgrades.CAPACITY) * 9;
@@ -714,21 +714,28 @@ public class PartStorageBus extends PartUpgradeable implements IStorageBus, INBT
                             }
                         }
 
-                        if (this.getStackType() == ITEM_STACK_TYPE && this.getInstalledUpgrades(Upgrades.FUZZY) > 0) {
-                            FuzzyPriorityList<IAEItemStack> partitionList = new FuzzyPriorityList<>(
+                        if (hasNBTFilter) {
+                            final FuzzyMode fuzzyMode = this.getInstalledUpgrades(Upgrades.FUZZY) > 0
+                                    ? (FuzzyMode) this.getConfigManager().getSetting(Settings.FUZZY_MODE)
+                                    : null;
+                            final NBTFilteredList partitionList = new NBTFilteredList(
+                                    this.nbtFilterConfig,
                                     priorityList,
-                                    (FuzzyMode) this.getConfigManager().getSetting(Settings.FUZZY_MODE));
+                                    fuzzyMode);
                             this.handler.setPartitionList(partitionList);
                             this.handler.setExtractPartitionList(partitionList);
-                        } else {
-                            PrecisePriorityList partitionList = new PrecisePriorityList<>(priorityList);
-                            this.handler.setPartitionList(partitionList);
-                            this.handler.setExtractPartitionList(partitionList);
-                        }
-                    } else if (hasNBTFilter) {
-                        final NBTFilteredList partitionList = new NBTFilteredList(this.nbtFilterConfig);
-                        this.handler.setPartitionList(partitionList);
-                        this.handler.setExtractPartitionList(partitionList);
+                        } else if (this.getStackType() == ITEM_STACK_TYPE
+                                && this.getInstalledUpgrades(Upgrades.FUZZY) > 0) {
+                                    FuzzyPriorityList<IAEItemStack> partitionList = new FuzzyPriorityList<>(
+                                            priorityList,
+                                            (FuzzyMode) this.getConfigManager().getSetting(Settings.FUZZY_MODE));
+                                    this.handler.setPartitionList(partitionList);
+                                    this.handler.setExtractPartitionList(partitionList);
+                                } else {
+                                    PrecisePriorityList partitionList = new PrecisePriorityList<>(priorityList);
+                                    this.handler.setPartitionList(partitionList);
+                                    this.handler.setExtractPartitionList(partitionList);
+                                }
                     } else {
                         OreFilteredList partitionList = new OreFilteredList(oreFilterString);
                         this.handler.setPartitionList(partitionList);

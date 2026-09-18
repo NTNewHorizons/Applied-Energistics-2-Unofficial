@@ -107,7 +107,7 @@ public class PartExportBus extends PartBaseExportBus<IAEItemStack> implements IC
     protected void doOreDict(IEnergyGrid energy, IMEMonitor<IAEItemStack> gridInv) {
         if (this.getInstalledUpgrades(Upgrades.NBT_FILTER) > 0) {
             for (final IAEItemStack stack : gridInv.getStorageList()) {
-                if (stack == null || !this.nbtFilterConfig.matches(stack.getItemStack())) continue;
+                if (!this.matchesNBTItemFilter(stack)) continue;
                 this.pushItemIntoTarget(energy, gridInv, stack);
                 if (this.itemToSend <= 0) break;
             }
