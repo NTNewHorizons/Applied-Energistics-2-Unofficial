@@ -83,7 +83,7 @@ public class GuiNBTFilter extends GuiSub {
     @Override
     public void drawFG(final int offsetX, final int offsetY, final int mouseX, final int mouseY) {
         this.fontRendererObj.drawString("NBT Filter", 10, 10, ColorUtils.guiTextColorGray.getColor());
-        
+
         // Draw field placeholders
         for (final FilterRow row : this.rows) {
             if (row.pathField.getText().isEmpty() && !row.pathField.isFocused()) {
