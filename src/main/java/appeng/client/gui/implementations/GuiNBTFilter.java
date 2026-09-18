@@ -17,12 +17,15 @@ import appeng.core.sync.packets.PacketNBTFilterConfig;
 import appeng.helpers.INBTFilterable;
 import appeng.util.nbt.NBTFilterConfig;
 import appeng.util.nbt.NBTFilterEntry;
+import cpw.mods.fml.client.config.GuiButtonExt;
 
 public class GuiNBTFilter extends GuiSub {
 
     private static final int MAX_VISIBLE_FILTERS = 5;
     private static final int ROW_TOP = 31;
-    private static final int ROW_HEIGHT = 23;
+    private static final int ROW_HEIGHT = 14;
+    private static final int ROW_CONTROL_OFFSET = 4;
+    private static final int ROW_CONTROL_HEIGHT = 12;
 
     private final ContainerNBTFilter containerNBTFilter;
     private final List<FilterRow> rows = new ArrayList<>();
@@ -169,7 +172,7 @@ public class GuiNBTFilter extends GuiSub {
         private FilterRow(final int index, final int y, final NBTFilterEntry entry) {
             this.index = index;
             this.entry = entry;
-            this.pathField = new MEGuiTextField(92, 12) {
+            this.pathField = new MEGuiTextField(92, ROW_CONTROL_HEIGHT) {
 
                 @Override
                 public void onTextChange(final String oldText) {
@@ -179,19 +182,19 @@ public class GuiNBTFilter extends GuiSub {
                 }
             };
             this.pathField.x = guiLeft + 10;
-            this.pathField.y = y + 4;
+            this.pathField.y = y + ROW_CONTROL_OFFSET;
             this.pathField.setMaxStringLength(256);
             this.pathField.setText(entry.getPath(), true);
 
-            this.comparisonButton = new GuiButton(
+            this.comparisonButton = new GuiButtonExt(
                     200 + index,
                     guiLeft + 105,
-                    y,
+                    y + ROW_CONTROL_OFFSET,
                     51,
-                    20,
+                    ROW_CONTROL_HEIGHT,
                     entry.getComparison().getDisplayName());
 
-            this.valueField = new MEGuiTextField(62, 12) {
+            this.valueField = new MEGuiTextField(62, ROW_CONTROL_HEIGHT) {
 
                 @Override
                 public void onTextChange(final String oldText) {
@@ -201,12 +204,18 @@ public class GuiNBTFilter extends GuiSub {
                 }
             };
             this.valueField.x = guiLeft + 159;
-            this.valueField.y = y + 4;
+            this.valueField.y = y + ROW_CONTROL_OFFSET;
             this.valueField.setMaxStringLength(1024);
             this.valueField.setText(entry.getValue(), true);
             this.valueField.setEnabled(entry.getComparison().requiresValue());
 
-            this.deleteButton = new GuiButton(300 + index, guiLeft + 224, y, 21, 20, "X");
+            this.deleteButton = new GuiButtonExt(
+                    300 + index,
+                    guiLeft + 224,
+                    y + ROW_CONTROL_OFFSET,
+                    21,
+                    ROW_CONTROL_HEIGHT,
+                    "X");
         }
     }
 }
