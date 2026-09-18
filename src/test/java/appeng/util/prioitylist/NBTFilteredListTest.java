@@ -51,9 +51,21 @@ public class NBTFilteredListTest {
 
     @Test
     public void emptyNbtRulesRejectAllItems() {
-        assertTrue(new NBTFilteredList(new NBTFilterConfig(), Collections.emptyList(), null).isEmpty());
-        assertTrue(new NBTFilteredList(new NBTFilterConfig(), Collections.emptyList(), FuzzyMode.IGNORE_ALL).isEmpty());
-        assertTrue(new NBTFilteredList(new NBTFilterConfig(), Arrays.asList(stack(new Item(), 0, 99)), null).isEmpty());
+        final Item item = new Item();
+        final IAEItemStack candidate = stack(item, 0, 1);
+        final NBTFilteredList withoutItems = new NBTFilteredList(
+                new NBTFilterConfig(),
+                Collections.emptyList(),
+                null);
+        final NBTFilteredList withItems = new NBTFilteredList(
+                new NBTFilterConfig(),
+                Arrays.asList(stack(item, 0, 99)),
+                null);
+
+        assertFalse(withoutItems.isEmpty());
+        assertFalse(withItems.isEmpty());
+        assertFalse(withoutItems.isListed(candidate));
+        assertFalse(withItems.isListed(candidate));
     }
 
     private static NBTFilterConfig rules() {

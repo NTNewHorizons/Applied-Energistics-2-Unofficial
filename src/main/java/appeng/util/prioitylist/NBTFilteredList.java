@@ -45,7 +45,7 @@ public final class NBTFilteredList implements IPartitionList<IAEItemStack> {
 
     @Override
     public boolean isEmpty() {
-        return this.config.getFilters().isEmpty() && this.items.isEmpty();
+        return false;
     }
 
     @Override
