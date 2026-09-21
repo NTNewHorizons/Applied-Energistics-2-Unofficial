@@ -150,7 +150,7 @@ public class GuiNBTFilter extends GuiSub {
         this.drawTexturedModalRect(offsetX, offsetY + y, 0, ROW_BOTTOM_Y, this.xSize, TEXTURE_HEIGHT - ROW_BOTTOM_Y);
         for (final FilterRow row : this.rows) {
             row.pathField.drawTextBox();
-            row.valueField.drawTextBox();
+            if (row.entry.getComparison().requiresValue()) row.valueField.drawTextBox();
         }
     }
 
