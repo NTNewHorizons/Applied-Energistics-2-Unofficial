@@ -21,15 +21,13 @@ import cpw.mods.fml.client.config.GuiButtonExt;
 
 public class GuiNBTFilter extends GuiSub {
 
-    private static final int MAX_VISIBLE_FILTERS = 5;
+    private static final int MAX_VISIBLE_FILTERS = 15;
     private static final int ROW_TOP = 31;
     private static final int ROW_HEIGHT = 14;
     private static final int ROW_CONTROL_OFFSET = 4;
     private static final int ROW_CONTROL_HEIGHT = 12;
-    private static final int TEXTURE_TOP_HEIGHT = 33;
-    private static final int TEXTURE_ROW_HEIGHT = 14;
-    private static final int TEXTURE_BOTTOM_Y = TEXTURE_TOP_HEIGHT + TEXTURE_ROW_HEIGHT;
-    private static final int TEXTURE_HEIGHT = 61;
+    private static final int ROW_BOTTOM_Y = ROW_TOP + ROW_HEIGHT;
+    private static final int TEXTURE_HEIGHT = 57;
 
     private final ContainerNBTFilter containerNBTFilter;
     private final List<FilterRow> rows = new ArrayList<>();
@@ -110,21 +108,21 @@ public class GuiNBTFilter extends GuiSub {
             this.rebuildControls();
         }
         this.bindTexture("guis/nbtFilter.png");
-        this.drawTexturedModalRect(offsetX, offsetY, 0, 0, this.xSize, TEXTURE_TOP_HEIGHT);
+        this.drawTexturedModalRect(offsetX, offsetY, 0, 0, this.xSize, ROW_TOP);
 
-        int y = TEXTURE_TOP_HEIGHT;
+        int y = ROW_TOP;
         for (int row = 0; row < this.rows.size(); row++) {
-            this.drawTexturedModalRect(offsetX, offsetY + y, 0, TEXTURE_TOP_HEIGHT, this.xSize, TEXTURE_ROW_HEIGHT);
-            y += TEXTURE_ROW_HEIGHT;
+            this.drawTexturedModalRect(offsetX, offsetY + y, 0, ROW_TOP, this.xSize, ROW_HEIGHT);
+            y += ROW_HEIGHT;
         }
 
         this.drawTexturedModalRect(
                 offsetX,
                 offsetY + y,
                 0,
-                TEXTURE_BOTTOM_Y,
+                ROW_BOTTOM_Y,
                 this.xSize,
-                TEXTURE_HEIGHT - TEXTURE_BOTTOM_Y);
+                TEXTURE_HEIGHT - ROW_BOTTOM_Y);
         for (final FilterRow row : this.rows) {
             row.pathField.drawTextBox();
             row.valueField.drawTextBox();
