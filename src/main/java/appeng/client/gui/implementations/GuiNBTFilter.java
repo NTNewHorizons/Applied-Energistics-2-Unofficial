@@ -105,6 +105,14 @@ public class GuiNBTFilter extends GuiSub {
     }
 
     @Override
+    public void drawScreen(final int mouseX, final int mouseY, final float partialTicks) {
+        if (this.controlsDirty || this.observedRevision != this.containerNBTFilter.getRevision()) {
+            this.rebuildControls();
+        }
+        super.drawScreen(mouseX, mouseY, partialTicks);
+    }
+
+    @Override
     public void drawFG(final int offsetX, final int offsetY, final int mouseX, final int mouseY) {
         this.fontRendererObj.drawString("NBT Filter", 10, 10, ColorUtils.guiTextColorGray.getColor());
 
@@ -130,9 +138,6 @@ public class GuiNBTFilter extends GuiSub {
 
     @Override
     public void drawBG(final int offsetX, final int offsetY, final int mouseX, final int mouseY) {
-        if (this.controlsDirty || this.observedRevision != this.containerNBTFilter.getRevision()) {
-            this.rebuildControls();
-        }
         this.bindTexture("guis/nbtFilter.png");
         this.drawTexturedModalRect(offsetX, offsetY, 0, 0, this.xSize, ROW_TOP);
 
