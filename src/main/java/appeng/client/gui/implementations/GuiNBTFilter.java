@@ -21,13 +21,19 @@ import cpw.mods.fml.client.config.GuiButtonExt;
 
 public class GuiNBTFilter extends GuiSub {
 
-    private static final int MAX_VISIBLE_FILTERS = 15;
-    private static final int ROW_TOP = 31;
+    private static final int MAX_VISIBLE_FILTERS = 999;
+    private static final int ROW_TOP = 33;
     private static final int ROW_HEIGHT = 14;
-    private static final int ROW_CONTROL_OFFSET = 4;
     private static final int ROW_CONTROL_HEIGHT = 12;
     private static final int ROW_BOTTOM_Y = ROW_TOP + ROW_HEIGHT;
-    private static final int TEXTURE_HEIGHT = 57;
+    private static final int TEXTURE_HEIGHT = 81;
+    private static final int FOOTER_HEIGHT = TEXTURE_HEIGHT - ROW_BOTTOM_Y;
+    private static final int PADDING = 2;
+    private static final int BORDER_SIZE = 10;
+    private static final int PATH_FIELD_WIDTH = 100;
+    private static final int COMPARISON_FIELD_WIDTH = 48;
+    private static final int VALUE_FIELD_WIDTH = 70;
+    private static final int DELETE_BUTTON_WIDTH = ROW_CONTROL_HEIGHT;
 
     private final ContainerNBTFilter containerNBTFilter;
     private final List<FilterRow> rows = new ArrayList<>();
@@ -44,26 +50,46 @@ public class GuiNBTFilter extends GuiSub {
 
     @Override
     public void initGui() {
+        this.updateGuiGeometry();
         super.initGui();
         this.rebuildControls();
     }
 
     private void rebuildControls() {
+        this.updateGuiGeometry();
         this.buttonList.removeIf(button -> button != this.originalGuiBtn);
         this.rows.clear();
 
+        if (this.originalGuiBtn != null) {
+            this.originalGuiBtn.xPosition = this.guiLeft + this.xSize - 22;
+            this.originalGuiBtn.yPosition = this.guiTop;
+        }
+
         final NBTFilterConfig config = this.containerNBTFilter.getConfig();
-        this.modeButton = new GuiButton(0, this.guiLeft + 174, this.guiTop + 5, 52, 20, config.getMode().name());
+        this.modeButton = new GuiButtonExt(0, this.guiLeft + 174, this.guiTop + 5, 52, 20, config.getMode().name());
         this.buttonList.add(this.modeButton);
 
         final int visibleRows = Math.min(config.getFilters().size(), MAX_VISIBLE_FILTERS);
         for (int i = 0; i < visibleRows; i++) this.addRowControls(i, config.getFilters().get(i));
 
-        this.addButton = new GuiButton(100, this.guiLeft + 85, this.guiTop + 145, 86, 20, "+ Add Filter");
+        this.addButton = new GuiButtonExt(
+                100,
+                this.guiLeft + BORDER_SIZE,
+                this.guiTop + ROW_TOP + visibleRows * ROW_HEIGHT + PADDING,
+                this.xSize - BORDER_SIZE * 2,
+                20,
+                "Add Filter");
         this.addButton.enabled = config.getFilters().size() < MAX_VISIBLE_FILTERS;
         this.buttonList.add(this.addButton);
         this.observedRevision = this.containerNBTFilter.getRevision();
         this.controlsDirty = false;
+    }
+
+    private void updateGuiGeometry() {
+        final int visibleRows = Math.min(this.containerNBTFilter.getConfig().getFilters().size(), MAX_VISIBLE_FILTERS);
+        this.ySize = ROW_TOP + visibleRows * ROW_HEIGHT + FOOTER_HEIGHT;
+        this.guiLeft = (this.width - this.xSize) / 2;
+        this.guiTop = (this.height - this.ySize) / 2;
     }
 
     private void addRowControls(final int index, final NBTFilterEntry entry) {
@@ -88,7 +114,7 @@ public class GuiNBTFilter extends GuiSub {
                 this.fontRendererObj.drawString(
                         "NBT path",
                         row.pathField.x - guiLeft + 2,
-                        ROW_TOP + row.index * ROW_HEIGHT + 6,
+                        ROW_TOP + row.index * ROW_HEIGHT + PADDING + 2,
                         0x777777);
             }
             if (row.valueField.getText().isEmpty() && !row.valueField.isFocused()
@@ -96,7 +122,7 @@ public class GuiNBTFilter extends GuiSub {
                 this.fontRendererObj.drawString(
                         "value",
                         row.valueField.x - guiLeft + 2,
-                        ROW_TOP + row.index * ROW_HEIGHT + 6,
+                        ROW_TOP + row.index * ROW_HEIGHT + PADDING + 2,
                         0x777777);
             }
         }
@@ -116,13 +142,7 @@ public class GuiNBTFilter extends GuiSub {
             y += ROW_HEIGHT;
         }
 
-        this.drawTexturedModalRect(
-                offsetX,
-                offsetY + y,
-                0,
-                ROW_BOTTOM_Y,
-                this.xSize,
-                TEXTURE_HEIGHT - ROW_BOTTOM_Y);
+        this.drawTexturedModalRect(offsetX, offsetY + y, 0, ROW_BOTTOM_Y, this.xSize, TEXTURE_HEIGHT - ROW_BOTTOM_Y);
         for (final FilterRow row : this.rows) {
             row.pathField.drawTextBox();
             row.valueField.drawTextBox();
@@ -198,7 +218,7 @@ public class GuiNBTFilter extends GuiSub {
         private FilterRow(final int index, final int y, final NBTFilterEntry entry) {
             this.index = index;
             this.entry = entry;
-            this.pathField = new MEGuiTextField(92, ROW_CONTROL_HEIGHT) {
+            this.pathField = new MEGuiTextField(PATH_FIELD_WIDTH, ROW_CONTROL_HEIGHT) {
 
                 @Override
                 public void onTextChange(final String oldText) {
@@ -207,20 +227,20 @@ public class GuiNBTFilter extends GuiSub {
                     configurationChanged();
                 }
             };
-            this.pathField.x = guiLeft + 10;
-            this.pathField.y = y + ROW_CONTROL_OFFSET;
+            this.pathField.x = guiLeft + BORDER_SIZE;
+            this.pathField.y = y + PADDING;
             this.pathField.setMaxStringLength(256);
             this.pathField.setText(entry.getPath(), true);
 
             this.comparisonButton = new GuiButtonExt(
                     200 + index,
-                    guiLeft + 105,
-                    y + ROW_CONTROL_OFFSET,
-                    51,
+                    this.pathField.x + PADDING + PATH_FIELD_WIDTH,
+                    y + PADDING,
+                    COMPARISON_FIELD_WIDTH,
                     ROW_CONTROL_HEIGHT,
                     entry.getComparison().getDisplayName());
 
-            this.valueField = new MEGuiTextField(62, ROW_CONTROL_HEIGHT) {
+            this.valueField = new MEGuiTextField(VALUE_FIELD_WIDTH, ROW_CONTROL_HEIGHT) {
 
                 @Override
                 public void onTextChange(final String oldText) {
@@ -229,17 +249,17 @@ public class GuiNBTFilter extends GuiSub {
                     configurationChanged();
                 }
             };
-            this.valueField.x = guiLeft + 159;
-            this.valueField.y = y + ROW_CONTROL_OFFSET;
+            this.valueField.x = this.comparisonButton.xPosition + PADDING + COMPARISON_FIELD_WIDTH;
+            this.valueField.y = y + PADDING;
             this.valueField.setMaxStringLength(1024);
             this.valueField.setText(entry.getValue(), true);
             this.valueField.setEnabled(entry.getComparison().requiresValue());
 
             this.deleteButton = new GuiButtonExt(
                     300 + index,
-                    guiLeft + 224,
-                    y + ROW_CONTROL_OFFSET,
-                    21,
+                    this.valueField.x + PADDING + VALUE_FIELD_WIDTH,
+                    y + PADDING,
+                    DELETE_BUTTON_WIDTH,
                     ROW_CONTROL_HEIGHT,
                     "X");
         }
