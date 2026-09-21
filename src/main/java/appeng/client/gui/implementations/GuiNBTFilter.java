@@ -21,7 +21,7 @@ import cpw.mods.fml.client.config.GuiButtonExt;
 
 public class GuiNBTFilter extends GuiSub {
 
-    private static final int MAX_VISIBLE_FILTERS = 999;
+    private static final int MAX_VISIBLE_FILTERS = 25;
     private static final int ROW_TOP = 33;
     private static final int ROW_HEIGHT = 14;
     private static final int ROW_CONTROL_HEIGHT = 12;

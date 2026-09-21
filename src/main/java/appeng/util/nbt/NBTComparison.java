@@ -9,7 +9,7 @@ public enum NBTComparison {
     LESS_THAN("<", true),
     LESS_THAN_OR_EQUAL("<=", true),
     EXISTS("Exists", false),
-    NOT_EXISTS("!Exists", false);
+    NOT_EXISTS("Missing", false);
 
     private final String displayName;
     private final boolean requiresValue;
