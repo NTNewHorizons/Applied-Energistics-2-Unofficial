@@ -106,7 +106,7 @@ public abstract class GuiUpgradeable extends AEBaseGui {
                 Settings.ACTIONS,
                 ActionItems.ORE_FILTER);
         this.nbtFilter = new GuiImgButton(
-                this.guiLeft - 38,
+                this.guiLeft - 18,
                 this.guiTop + 28,
                 Settings.ACTIONS,
                 ActionItems.NBT_FILTER);
@@ -174,23 +174,24 @@ public abstract class GuiUpgradeable extends AEBaseGui {
     }
 
     protected void handleButtonVisibility() {
+        final boolean hasOreFilter = this.bc.getInstalledUpgrades(Upgrades.ORE_FILTER) > 0;
+
         if (this.redstoneMode != null) {
             this.redstoneMode.setVisibility(this.bc.getInstalledUpgrades(Upgrades.REDSTONE) > 0);
         }
         if (this.fuzzyMode != null) {
-            this.fuzzyMode.setVisibility(
-                    this.bc.getInstalledUpgrades(Upgrades.FUZZY) > 0
-                            && this.bc.getInstalledUpgrades(Upgrades.ORE_FILTER) == 0);
+            this.fuzzyMode.setVisibility(this.bc.getInstalledUpgrades(Upgrades.FUZZY) > 0 && !hasOreFilter);
         }
         if (this.craftMode != null) {
             this.craftMode.setVisibility(this.bc.getInstalledUpgrades(Upgrades.CRAFTING) > 0);
         }
 
         if (this.oreFilter != null) {
-            this.oreFilter.setVisibility(this.bc.getInstalledUpgrades(Upgrades.ORE_FILTER) > 0);
+            this.oreFilter.setVisibility(hasOreFilter);
         }
         if (this.nbtFilter != null) {
             this.nbtFilter.setVisibility(this.bc.getInstalledUpgrades(Upgrades.NBT_FILTER) > 0);
+            this.nbtFilter.xPosition = this.guiLeft - (hasOreFilter ? 38 : 18);
         }
     }
 

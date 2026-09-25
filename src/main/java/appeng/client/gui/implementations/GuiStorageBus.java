@@ -91,7 +91,7 @@ public class GuiStorageBus extends GuiUpgradeable {
                 Settings.ACTIONS,
                 ActionItems.ORE_FILTER);
         this.nbtFilter = new GuiImgButton(
-                this.guiLeft - 38,
+                this.guiLeft - 18,
                 this.guiTop + 108,
                 Settings.ACTIONS,
                 ActionItems.NBT_FILTER);
