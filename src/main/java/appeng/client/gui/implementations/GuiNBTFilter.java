@@ -24,18 +24,16 @@ public class GuiNBTFilter extends GuiSub {
     private static final int MAX_VISIBLE_FILTERS = 25;
     private static final int DISABLED_FIELD_BACKGROUND = 0xFFC6C6C6;
 
-    private static final int TEXTURE_HEIGHT = 76;
-    private static final int ROW_TOP = 30;
+    private static final int ROW_TOP = 28;
     private static final int ROW_HEIGHT = 14;
-    private static final int ROW_BOTTOM_Y = ROW_TOP + ROW_HEIGHT;
-    private static final int FOOTER_HEIGHT = TEXTURE_HEIGHT - ROW_BOTTOM_Y;
+    private static final int FOOTER_HEIGHT = 30;
 
     private static final int PADDING = 2;
-    private static final int BORDER_SIZE = 10;
+    private static final int BORDER_SIZE = 8;
     private static final int ROW_CONTROL_HEIGHT = 12;
     private static final int PATH_FIELD_WIDTH = 100;
     private static final int COMPARISON_FIELD_WIDTH = 42;
-    private static final int VALUE_FIELD_WIDTH = 76;
+    private static final int VALUE_FIELD_WIDTH = 80;
     private static final int DELETE_BUTTON_WIDTH = ROW_CONTROL_HEIGHT;
 
     private final ContainerNBTFilter containerNBTFilter;
@@ -151,7 +149,7 @@ public class GuiNBTFilter extends GuiSub {
             y += ROW_HEIGHT;
         }
 
-        this.drawTexturedModalRect(offsetX, offsetY + y, 0, ROW_BOTTOM_Y, this.xSize, TEXTURE_HEIGHT - ROW_BOTTOM_Y);
+        this.drawTexturedModalRect(offsetX, offsetY + y, 0, ROW_TOP + ROW_HEIGHT, this.xSize, FOOTER_HEIGHT);
         for (final FilterRow row : this.rows) {
             row.pathField.drawTextBox();
             if (row.entry.getComparison().requiresValue()) {
