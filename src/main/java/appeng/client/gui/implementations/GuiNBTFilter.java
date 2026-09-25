@@ -22,17 +22,20 @@ import cpw.mods.fml.client.config.GuiButtonExt;
 public class GuiNBTFilter extends GuiSub {
 
     private static final int MAX_VISIBLE_FILTERS = 25;
+    private static final int DISABLED_FIELD_BACKGROUND = 0xFFC6C6C6;
+
+    private static final int TEXTURE_HEIGHT = 79;
     private static final int ROW_TOP = 33;
     private static final int ROW_HEIGHT = 14;
-    private static final int ROW_CONTROL_HEIGHT = 12;
     private static final int ROW_BOTTOM_Y = ROW_TOP + ROW_HEIGHT;
-    private static final int TEXTURE_HEIGHT = 81;
     private static final int FOOTER_HEIGHT = TEXTURE_HEIGHT - ROW_BOTTOM_Y;
+
     private static final int PADDING = 2;
     private static final int BORDER_SIZE = 10;
+    private static final int ROW_CONTROL_HEIGHT = 12;
     private static final int PATH_FIELD_WIDTH = 100;
-    private static final int COMPARISON_FIELD_WIDTH = 48;
-    private static final int VALUE_FIELD_WIDTH = 70;
+    private static final int COMPARISON_FIELD_WIDTH = 42;
+    private static final int VALUE_FIELD_WIDTH = 76;
     private static final int DELETE_BUTTON_WIDTH = ROW_CONTROL_HEIGHT;
 
     private final ContainerNBTFilter containerNBTFilter;
@@ -150,7 +153,16 @@ public class GuiNBTFilter extends GuiSub {
         this.drawTexturedModalRect(offsetX, offsetY + y, 0, ROW_BOTTOM_Y, this.xSize, TEXTURE_HEIGHT - ROW_BOTTOM_Y);
         for (final FilterRow row : this.rows) {
             row.pathField.drawTextBox();
-            if (row.entry.getComparison().requiresValue()) row.valueField.drawTextBox();
+            if (row.entry.getComparison().requiresValue()) {
+                row.valueField.drawTextBox();
+            } else {
+                drawRect(
+                        row.valueField.x,
+                        row.valueField.y,
+                        row.valueField.x + row.valueField.w,
+                        row.valueField.y + row.valueField.h,
+                        DISABLED_FIELD_BACKGROUND);
+            }
         }
     }
 
@@ -239,7 +251,7 @@ public class GuiNBTFilter extends GuiSub {
 
             this.comparisonButton = new GuiButtonExt(
                     200 + index,
-                    this.pathField.x + PADDING + PATH_FIELD_WIDTH,
+                    this.pathField.x + PATH_FIELD_WIDTH + PADDING,
                     y + PADDING,
                     COMPARISON_FIELD_WIDTH,
                     ROW_CONTROL_HEIGHT,
@@ -254,7 +266,7 @@ public class GuiNBTFilter extends GuiSub {
                     configurationChanged();
                 }
             };
-            this.valueField.x = this.comparisonButton.xPosition + PADDING + COMPARISON_FIELD_WIDTH;
+            this.valueField.x = this.comparisonButton.xPosition + COMPARISON_FIELD_WIDTH + PADDING;
             this.valueField.y = y + PADDING;
             this.valueField.setMaxStringLength(1024);
             this.valueField.setText(entry.getValue(), true);
@@ -262,7 +274,7 @@ public class GuiNBTFilter extends GuiSub {
 
             this.deleteButton = new GuiButtonExt(
                     300 + index,
-                    this.valueField.x + PADDING + VALUE_FIELD_WIDTH,
+                    this.valueField.x + VALUE_FIELD_WIDTH + PADDING,
                     y + PADDING,
                     DELETE_BUTTON_WIDTH,
                     ROW_CONTROL_HEIGHT,
