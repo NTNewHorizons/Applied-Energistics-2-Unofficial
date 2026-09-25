@@ -24,8 +24,8 @@ public class GuiNBTFilter extends GuiSub {
     private static final int MAX_VISIBLE_FILTERS = 25;
     private static final int DISABLED_FIELD_BACKGROUND = 0xFFC6C6C6;
 
-    private static final int TEXTURE_HEIGHT = 79;
-    private static final int ROW_TOP = 33;
+    private static final int TEXTURE_HEIGHT = 76;
+    private static final int ROW_TOP = 30;
     private static final int ROW_HEIGHT = 14;
     private static final int ROW_BOTTOM_Y = ROW_TOP + ROW_HEIGHT;
     private static final int FOOTER_HEIGHT = TEXTURE_HEIGHT - ROW_BOTTOM_Y;
@@ -69,7 +69,8 @@ public class GuiNBTFilter extends GuiSub {
         }
 
         final NBTFilterConfig config = this.containerNBTFilter.getConfig();
-        this.modeButton = new GuiButtonExt(0, this.guiLeft + 174, this.guiTop + 5, 52, 20, config.getMode().name());
+        final int COMPARISON_BUTTON_OFFSET = BORDER_SIZE + PATH_FIELD_WIDTH + PADDING;
+        this.modeButton = new GuiButtonExt(0, this.guiLeft + COMPARISON_BUTTON_OFFSET, this.guiTop + BORDER_SIZE, COMPARISON_FIELD_WIDTH, 20, config.getMode().name());
         this.buttonList.add(this.modeButton);
 
         final int visibleRows = Math.min(config.getFilters().size(), MAX_VISIBLE_FILTERS);
@@ -117,7 +118,7 @@ public class GuiNBTFilter extends GuiSub {
 
     @Override
     public void drawFG(final int offsetX, final int offsetY, final int mouseX, final int mouseY) {
-        this.fontRendererObj.drawString("NBT Filter", 10, 10, ColorUtils.guiTextColorGray.getColor());
+        this.fontRendererObj.drawString("NBT Filter", BORDER_SIZE, BORDER_SIZE, ColorUtils.guiTextColorGray.getColor());
 
         // Draw field placeholders
         for (final FilterRow row : this.rows) {
