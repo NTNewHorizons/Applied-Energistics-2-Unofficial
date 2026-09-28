@@ -68,7 +68,13 @@ public class GuiNBTFilter extends GuiSub {
 
         final NBTFilterConfig config = this.containerNBTFilter.getConfig();
         final int COMPARISON_BUTTON_OFFSET = BORDER_SIZE + PATH_FIELD_WIDTH + PADDING;
-        this.modeButton = new GuiButtonExt(0, this.guiLeft + COMPARISON_BUTTON_OFFSET, this.guiTop + BORDER_SIZE, COMPARISON_FIELD_WIDTH, 20, config.getMode().name());
+        this.modeButton = new GuiButtonExt(
+                0,
+                this.guiLeft + COMPARISON_BUTTON_OFFSET,
+                this.guiTop + BORDER_SIZE,
+                COMPARISON_FIELD_WIDTH,
+                20,
+                config.getMode().name());
         this.buttonList.add(this.modeButton);
 
         final int visibleRows = Math.min(config.getFilters().size(), MAX_VISIBLE_FILTERS);

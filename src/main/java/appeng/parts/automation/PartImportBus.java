@@ -117,7 +117,7 @@ public class PartImportBus extends PartBaseImportBus<IAEItemStack> implements II
         final int toSend = this.calculateMaximumAmountToImport(adaptor, whatToImport, inv, fzMode);
         final ItemStack newItems;
 
-        if (this.getInstalledUpgrades(Upgrades.FUZZY) > 0 && this.getInstalledUpgrades(Upgrades.NBT_FILTER) == 0) {
+        if (this.shouldUseDirectFuzzyExtraction()) {
             newItems = adaptor.removeSimilarItems(
                     toSend,
                     whatToImport == null ? null : whatToImport.getItemStack(),
@@ -171,7 +171,7 @@ public class PartImportBus extends PartBaseImportBus<IAEItemStack> implements II
 
         final IAEItemStack itemAmountNotStorable;
         final ItemStack simResult;
-        if (this.getInstalledUpgrades(Upgrades.FUZZY) > 0 && this.getInstalledUpgrades(Upgrades.NBT_FILTER) == 0) {
+        if (this.shouldUseDirectFuzzyExtraction()) {
             simResult = myAdaptor.simulateSimilarRemove(toSend, itemStackToImport, fzMode, this.configDestination(inv));
         } else {
             simResult = myAdaptor.simulateRemove(toSend, itemStackToImport, this.configDestination(inv));
@@ -184,6 +184,11 @@ public class PartImportBus extends PartBaseImportBus<IAEItemStack> implements II
         }
 
         return toSend;
+    }
+
+    private boolean shouldUseDirectFuzzyExtraction() {
+        return this.getInstalledUpgrades(Upgrades.FUZZY) > 0 && this.getInstalledUpgrades(Upgrades.ORE_FILTER) == 0
+                && this.getInstalledUpgrades(Upgrades.NBT_FILTER) == 0;
     }
 
     private IInventoryDestination configDestination(final IMEMonitor<IAEItemStack> itemInventory) {

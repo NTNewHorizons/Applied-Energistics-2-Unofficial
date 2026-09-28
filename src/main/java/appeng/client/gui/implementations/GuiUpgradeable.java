@@ -44,6 +44,10 @@ import appeng.util.inv.IUpgradeInventory;
 
 public abstract class GuiUpgradeable extends AEBaseGui {
 
+    private static final int BUTTON_OFFSET_LEFT = 18;
+    private static final int BUTTON_OFFSET_TOP = 8;
+    private static final int BUTTON_SIZE = 20;
+
     private static final EnumMap<Upgrades, ItemStack> UPGRADE_CARD_CACHE = new EnumMap<>(Upgrades.class);
     private static boolean UPGRADE_CARD_CACHE_BUILT = false;
 
@@ -90,32 +94,36 @@ public abstract class GuiUpgradeable extends AEBaseGui {
     @SuppressWarnings("unchecked")
     protected void addButtons() {
         this.redstoneMode = new GuiImgButton(
-                this.guiLeft - 18,
-                this.guiTop + 8,
+                this.guiLeft - BUTTON_OFFSET_LEFT,
+                this.guiTop + BUTTON_OFFSET_TOP,
                 Settings.REDSTONE_CONTROLLED,
                 RedstoneMode.IGNORE);
         this.fuzzyMode = new GuiImgButton(
-                this.guiLeft - 18,
-                this.guiTop + 28,
+                this.guiLeft - BUTTON_OFFSET_LEFT,
+                this.guiTop + BUTTON_OFFSET_TOP + BUTTON_SIZE,
                 Settings.FUZZY_MODE,
                 FuzzyMode.IGNORE_ALL);
-        this.craftMode = new GuiImgButton(this.guiLeft - 18, this.guiTop + 48, Settings.CRAFT_ONLY, YesNo.NO);
         this.oreFilter = new GuiImgButton(
-                this.guiLeft - 18,
-                this.guiTop + 28,
+                this.guiLeft - BUTTON_OFFSET_LEFT,
+                this.guiTop + BUTTON_OFFSET_TOP + BUTTON_SIZE,
                 Settings.ACTIONS,
                 ActionItems.ORE_FILTER);
         this.nbtFilter = new GuiImgButton(
-                this.guiLeft - 18,
-                this.guiTop + 28,
+                this.guiLeft - BUTTON_OFFSET_LEFT,
+                this.guiTop + BUTTON_OFFSET_TOP + BUTTON_SIZE,
                 Settings.ACTIONS,
                 ActionItems.NBT_FILTER);
+        this.craftMode = new GuiImgButton(
+                this.guiLeft - BUTTON_OFFSET_LEFT,
+                this.guiTop + BUTTON_OFFSET_TOP + BUTTON_SIZE * 2,
+                Settings.CRAFT_ONLY,
+                YesNo.NO);
 
-        this.buttonList.add(this.craftMode);
         this.buttonList.add(this.redstoneMode);
         this.buttonList.add(this.fuzzyMode);
         this.buttonList.add(this.oreFilter);
         this.buttonList.add(this.nbtFilter);
+        this.buttonList.add(this.craftMode);
     }
 
     @Override
@@ -174,24 +182,31 @@ public abstract class GuiUpgradeable extends AEBaseGui {
     }
 
     protected void handleButtonVisibility() {
+        final boolean hasRedstone = this.bc.getInstalledUpgrades(Upgrades.REDSTONE) > 0;
+        final boolean hasFuzzy = this.bc.getInstalledUpgrades(Upgrades.FUZZY) > 0;
+        final boolean hasCrafting = this.bc.getInstalledUpgrades(Upgrades.CRAFTING) > 0;
         final boolean hasOreFilter = this.bc.getInstalledUpgrades(Upgrades.ORE_FILTER) > 0;
+        final boolean hasNbtFilter = this.bc.getInstalledUpgrades(Upgrades.NBT_FILTER) > 0;
 
         if (this.redstoneMode != null) {
-            this.redstoneMode.setVisibility(this.bc.getInstalledUpgrades(Upgrades.REDSTONE) > 0);
+            this.redstoneMode.setVisibility(hasRedstone);
         }
         if (this.fuzzyMode != null) {
-            this.fuzzyMode.setVisibility(this.bc.getInstalledUpgrades(Upgrades.FUZZY) > 0 && !hasOreFilter);
+            this.fuzzyMode.setVisibility(hasFuzzy && !hasOreFilter);
         }
         if (this.craftMode != null) {
-            this.craftMode.setVisibility(this.bc.getInstalledUpgrades(Upgrades.CRAFTING) > 0);
+            this.craftMode.setVisibility(hasCrafting);
         }
-
         if (this.oreFilter != null) {
             this.oreFilter.setVisibility(hasOreFilter);
         }
         if (this.nbtFilter != null) {
-            this.nbtFilter.setVisibility(this.bc.getInstalledUpgrades(Upgrades.NBT_FILTER) > 0);
-            this.nbtFilter.xPosition = this.guiLeft - (hasOreFilter ? 38 : 18);
+            this.nbtFilter.setVisibility(hasNbtFilter);
+            if (hasFuzzy || hasOreFilter) {
+                this.nbtFilter.xPosition = this.guiLeft - BUTTON_OFFSET_LEFT - BUTTON_SIZE;
+            } else {
+                this.nbtFilter.xPosition = this.guiLeft - BUTTON_OFFSET_LEFT;
+            }
         }
     }
 
