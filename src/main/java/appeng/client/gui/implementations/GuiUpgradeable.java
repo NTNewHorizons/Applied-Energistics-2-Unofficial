@@ -192,21 +192,20 @@ public abstract class GuiUpgradeable extends AEBaseGui {
             this.redstoneMode.setVisibility(hasRedstone);
         }
         if (this.fuzzyMode != null) {
-            this.fuzzyMode.setVisibility(hasFuzzy && !hasOreFilter);
+            this.fuzzyMode.setVisibility(hasFuzzy);
         }
         if (this.craftMode != null) {
             this.craftMode.setVisibility(hasCrafting);
         }
         if (this.oreFilter != null) {
             this.oreFilter.setVisibility(hasOreFilter);
+            this.oreFilter.xPosition = this.guiLeft - BUTTON_OFFSET_LEFT - (hasFuzzy ? BUTTON_SIZE : 0);
         }
         if (this.nbtFilter != null) {
             this.nbtFilter.setVisibility(hasNbtFilter);
-            if (hasFuzzy || hasOreFilter) {
-                this.nbtFilter.xPosition = this.guiLeft - BUTTON_OFFSET_LEFT - BUTTON_SIZE;
-            } else {
-                this.nbtFilter.xPosition = this.guiLeft - BUTTON_OFFSET_LEFT;
-            }
+            this.nbtFilter.xPosition = this.guiLeft - BUTTON_OFFSET_LEFT
+                    - (hasFuzzy ? BUTTON_SIZE : 0)
+                    - (hasOreFilter ? BUTTON_SIZE : 0);
         }
     }
 

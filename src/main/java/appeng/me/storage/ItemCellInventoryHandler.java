@@ -10,8 +10,8 @@ import appeng.api.storage.data.IAEItemStack;
 import appeng.api.storage.data.IAEStack;
 import appeng.api.storage.data.IItemList;
 import appeng.tile.inventory.IAEStackInventory;
+import appeng.util.prioitylist.CombinedItemFilter;
 import appeng.util.prioitylist.FuzzyPriorityList;
-import appeng.util.prioitylist.OreFilteredList;
 import appeng.util.prioitylist.PrecisePriorityList;
 
 public class ItemCellInventoryHandler extends CellInventoryHandler<IAEItemStack> {
@@ -21,12 +21,8 @@ public class ItemCellInventoryHandler extends CellInventoryHandler<IAEItemStack>
     }
 
     @Override
-    protected void setOreFilteredList(String filter) {
-        this.setPartitionList(new OreFilteredList(filter));
-    }
-
-    @Override
-    protected void setPriorityList(boolean hasFuzzy, IAEStackInventory config, FuzzyMode fzMode) {
+    protected void setPriorityList(boolean hasFuzzy, boolean hasOreFilter, IAEStackInventory config, FuzzyMode fzMode,
+            String oreFilter) {
         final IItemList<IAEItemStack> priorityList = AEApi.instance().storage().createItemList();
         for (int x = 0; x < config.getSizeInventory(); x++) {
             final IAEStack<?> aes = config.getAEStackInSlot(x);
@@ -34,7 +30,9 @@ public class ItemCellInventoryHandler extends CellInventoryHandler<IAEItemStack>
                 priorityList.add((IAEItemStack) aes);
             }
         }
-        if (!priorityList.isEmpty()) {
+        if (hasOreFilter) {
+            this.setPartitionList(new CombinedItemFilter(priorityList, hasFuzzy ? fzMode : null, oreFilter, null));
+        } else if (!priorityList.isEmpty()) {
             if (hasFuzzy) {
                 this.setPartitionList(new FuzzyPriorityList<>(priorityList, fzMode));
             } else {

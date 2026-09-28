@@ -31,7 +31,7 @@ import appeng.util.Platform;
 import appeng.util.inv.IInventoryDestination;
 import appeng.util.inv.ItemSlot;
 import appeng.util.item.AEItemStack;
-import appeng.util.prioitylist.OreFilteredList;
+import appeng.util.prioitylist.CombinedItemFilter;
 
 public class PartImportBus extends PartBaseImportBus<IAEItemStack> implements IInventoryDestination {
 
@@ -200,30 +200,16 @@ public class PartImportBus extends PartBaseImportBus<IAEItemStack> implements II
     protected boolean doOreDict(final Object myTarget, IMEMonitor<IAEItemStack> inv, final IEnergyGrid energy,
             final FuzzyMode fzMode) {
         if (!(myTarget instanceof InventoryAdaptor myAdaptor)) return false;
-        if (this.getInstalledUpgrades(Upgrades.NBT_FILTER) > 0) {
-            for (final ItemSlot slot : myAdaptor) {
-                if (this.itemToSend <= 0) break;
-                if (slot.isExtractable() && this.matchesNBTItemFilter(slot.getAEItemStack())) {
-                    while (this.itemToSend > 0) {
-                        if (this.importStuff(myAdaptor, slot.getAEItemStack(), inv, energy, fzMode)) break;
-                    }
+        final CombinedItemFilter filter = this.createItemFilter();
+        for (final ItemSlot slot : myAdaptor) {
+            if (this.itemToSend <= 0) break;
+            if (slot.isExtractable() && filter.isListed(slot.getAEItemStack())) {
+                while (this.itemToSend > 0) {
+                    if (this.importStuff(myAdaptor, slot.getAEItemStack(), inv, energy, fzMode)) break;
                 }
             }
-            return true;
         }
-        if (!oreFilterString.isEmpty()) {
-            if (filterPredicate == null) filterPredicate = OreFilteredList.makeFilter(oreFilterString);
-            for (ItemSlot slot : myAdaptor) {
-                if (this.itemToSend <= 0) break;
-                if (slot.isExtractable() && filterPredicate != null && filterPredicate.test(slot.getAEItemStack())) {
-                    while (this.itemToSend > 0) {
-                        if (this.importStuff(myAdaptor, slot.getAEItemStack(), inv, energy, fzMode)) break;
-                    }
-                }
-            }
-            return true;
-        }
-        return false;
+        return true;
     }
 
     @Override

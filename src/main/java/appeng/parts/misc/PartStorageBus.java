@@ -92,9 +92,8 @@ import appeng.transformer.annotations.Integration.Method;
 import appeng.util.IterationCounter;
 import appeng.util.Platform;
 import appeng.util.nbt.NBTFilterConfig;
+import appeng.util.prioitylist.CombinedItemFilter;
 import appeng.util.prioitylist.FuzzyPriorityList;
-import appeng.util.prioitylist.NBTFilteredList;
-import appeng.util.prioitylist.OreFilteredList;
 import appeng.util.prioitylist.PrecisePriorityList;
 import buildcraft.api.transport.IPipeTile.PipeType;
 import cpw.mods.fml.relauncher.Side;
@@ -697,50 +696,43 @@ public class PartStorageBus extends PartUpgradeable implements IStorageBus, INBT
                     final boolean hasOreFilter = this.getInstalledUpgrades(Upgrades.ORE_FILTER) > 0;
                     final boolean hasNBTFilter = this.getInstalledUpgrades(Upgrades.NBT_FILTER) > 0;
 
-                    if (!hasOreFilter || hasNBTFilter) {
-                        final IItemList priorityList = getItemList();
+                    final IItemList priorityList = getItemList();
 
-                        final int slotsToUse = 18 + this.getInstalledUpgrades(Upgrades.CAPACITY) * 9;
-                        for (int x = 0; x < this.config.getSizeInventory() && x < slotsToUse; x++) {
-                            IAEStack<?> is = this.config.getAEStackInSlot(x);
+                    final int slotsToUse = 18 + this.getInstalledUpgrades(Upgrades.CAPACITY) * 9;
+                    for (int x = 0; x < this.config.getSizeInventory() && x < slotsToUse; x++) {
+                        IAEStack<?> is = this.config.getAEStackInSlot(x);
 
-                            if (this.getStackType() == FLUID_STACK_TYPE && isAE2FCLoaded
-                                    && is instanceof IAEItemStack ais
-                                    && ais.getItem() instanceof ItemFluidPacket) {
-                                is = ItemFluidPacket.getFluidAEStack(ais);
-                            }
-                            if (is != null) {
-                                priorityList.add(is);
-                            }
+                        if (this.getStackType() == FLUID_STACK_TYPE && isAE2FCLoaded
+                                && is instanceof IAEItemStack ais
+                                && ais.getItem() instanceof ItemFluidPacket) {
+                            is = ItemFluidPacket.getFluidAEStack(ais);
                         }
+                        if (is != null) priorityList.add(is);
+                    }
 
-                        if (hasNBTFilter) {
-                            final FuzzyMode fuzzyMode = this.getInstalledUpgrades(Upgrades.FUZZY) > 0
-                                    ? (FuzzyMode) this.getConfigManager().getSetting(Settings.FUZZY_MODE)
-                                    : null;
-                            final NBTFilteredList partitionList = new NBTFilteredList(
-                                    this.nbtFilterConfig,
-                                    priorityList,
-                                    fuzzyMode);
-                            this.handler.setPartitionList(partitionList);
-                            this.handler.setExtractPartitionList(partitionList);
-                        } else if (this.getStackType() == ITEM_STACK_TYPE
-                                && this.getInstalledUpgrades(Upgrades.FUZZY) > 0) {
-                                    FuzzyPriorityList<IAEItemStack> partitionList = new FuzzyPriorityList<>(
-                                            priorityList,
-                                            (FuzzyMode) this.getConfigManager().getSetting(Settings.FUZZY_MODE));
-                                    this.handler.setPartitionList(partitionList);
-                                    this.handler.setExtractPartitionList(partitionList);
-                                } else {
-                                    PrecisePriorityList partitionList = new PrecisePriorityList<>(priorityList);
-                                    this.handler.setPartitionList(partitionList);
-                                    this.handler.setExtractPartitionList(partitionList);
-                                }
-                    } else {
-                        OreFilteredList partitionList = new OreFilteredList(oreFilterString);
+                    if (this.getStackType() == ITEM_STACK_TYPE && (hasOreFilter || hasNBTFilter)) {
+                        final FuzzyMode fuzzyMode = this.getInstalledUpgrades(Upgrades.FUZZY) > 0
+                                ? (FuzzyMode) this.getConfigManager().getSetting(Settings.FUZZY_MODE)
+                                : null;
+                        final CombinedItemFilter partitionList = new CombinedItemFilter(
+                                priorityList,
+                                fuzzyMode,
+                                hasOreFilter ? this.oreFilterString : null,
+                                hasNBTFilter ? this.nbtFilterConfig : null);
                         this.handler.setPartitionList(partitionList);
                         this.handler.setExtractPartitionList(partitionList);
-                    }
+                    } else
+                        if (this.getStackType() == ITEM_STACK_TYPE && this.getInstalledUpgrades(Upgrades.FUZZY) > 0) {
+                            final FuzzyPriorityList<IAEItemStack> partitionList = new FuzzyPriorityList<>(
+                                    priorityList,
+                                    (FuzzyMode) this.getConfigManager().getSetting(Settings.FUZZY_MODE));
+                            this.handler.setPartitionList(partitionList);
+                            this.handler.setExtractPartitionList(partitionList);
+                        } else {
+                            final PrecisePriorityList partitionList = new PrecisePriorityList<>(priorityList);
+                            this.handler.setPartitionList(partitionList);
+                            this.handler.setExtractPartitionList(partitionList);
+                        }
 
                     if (inv instanceof IMEMonitor<?>m) {
                         m.addListener(this, this.handler);

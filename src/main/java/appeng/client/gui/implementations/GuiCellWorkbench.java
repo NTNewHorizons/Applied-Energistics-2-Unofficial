@@ -96,10 +96,7 @@ public class GuiCellWorkbench extends GuiUpgradeable {
         this.bindTexture(this.getBackground());
         this.drawTexturedModalRect(offsetX, offsetY, 0, 0, 211 - 34, this.ySize);
 
-        final int slotsTextureY = this.cvb.getUpgradeable().getInstalledUpgrades(Upgrades.ORE_FILTER) != 0 ? 46 : 28;
-
-        for (int i = 0; i < 7; i++)
-            this.drawTexturedModalRect(offsetX + 7, offsetY + 28 + (18 * i), 7, slotsTextureY, 162, 18);
+        for (int i = 0; i < 7; i++) this.drawTexturedModalRect(offsetX + 7, offsetY + 28 + (18 * i), 7, 28, 162, 18);
 
         if (this.drawUpgrades()) {
             if (this.workbench.availableUpgrades() <= 8) {
@@ -198,11 +195,12 @@ public class GuiCellWorkbench extends GuiUpgradeable {
         final boolean hasFuzzy = this.cvb.getUpgradeable().getInstalledUpgrades(Upgrades.FUZZY) != 0;
         final boolean hasOreFilter = this.cvb.getUpgradeable().getInstalledUpgrades(Upgrades.ORE_FILTER) != 0;
 
-        this.fuzzyMode.setVisibility(!hasOreFilter && hasFuzzy);
+        this.fuzzyMode.setVisibility(hasFuzzy);
         this.oreFilter.setVisibility(hasOreFilter);
+        this.oreFilter.xPosition = this.guiLeft - 18 - (hasFuzzy ? 20 : 0);
         this.cellRestriction.setVisibility(this.workbench.haveCellRestrictAble());
 
-        for (VirtualMEPhantomSlot configSlot : this.configSlots) configSlot.setHidden(hasOreFilter);
+        for (VirtualMEPhantomSlot configSlot : this.configSlots) configSlot.setHidden(false);
     }
 
     @Override

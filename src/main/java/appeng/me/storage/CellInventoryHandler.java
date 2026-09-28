@@ -25,6 +25,7 @@ import appeng.api.storage.StorageChannel;
 import appeng.api.storage.data.IAEStack;
 import appeng.api.storage.data.IAEStackType;
 import appeng.tile.inventory.IAEStackInventory;
+import appeng.util.prioitylist.CombinedItemFilter;
 import appeng.util.prioitylist.FuzzyPriorityList;
 
 public abstract class CellInventoryHandler<StackType extends IAEStack<StackType>> extends MEInventoryHandler<StackType>
@@ -68,17 +69,12 @@ public abstract class CellInventoryHandler<StackType extends IAEStack<StackType>
                 setSticky(true);
             }
 
-            if (hasOreFilter) {
-                setOreFilteredList(filter);
-            } else {
-                setPriorityList(hasFuzzy, config, fzMode);
-            }
+            setPriorityList(hasFuzzy, hasOreFilter, config, fzMode, filter);
         }
     }
 
-    protected void setOreFilteredList(String filter) {}
-
-    protected void setPriorityList(boolean hasFuzzy, IAEStackInventory config, FuzzyMode fzMode) {}
+    protected void setPriorityList(boolean hasFuzzy, boolean hasOreFilter, IAEStackInventory config, FuzzyMode fzMode,
+            String oreFilter) {}
 
     @Override
     public ICellInventory<StackType> getCellInv() {
@@ -96,7 +92,8 @@ public abstract class CellInventoryHandler<StackType extends IAEStack<StackType>
 
     @Override
     public boolean isFuzzy() {
-        return this.getPartitionList() instanceof FuzzyPriorityList;
+        return this.getPartitionList() instanceof FuzzyPriorityList
+                || this.getPartitionList() instanceof CombinedItemFilter filter && filter.isFuzzy();
     }
 
     @Override

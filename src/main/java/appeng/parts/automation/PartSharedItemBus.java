@@ -10,7 +10,8 @@
 
 package appeng.parts.automation;
 
-import java.util.function.Predicate;
+import java.util.ArrayList;
+import java.util.List;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -44,7 +45,7 @@ import appeng.tile.inventory.IIAEStackInventory;
 import appeng.util.InventoryAdaptor;
 import appeng.util.Platform;
 import appeng.util.nbt.NBTFilterConfig;
-import appeng.util.nbt.NBTItemFilterMatcher;
+import appeng.util.prioitylist.CombinedItemFilter;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
@@ -57,7 +58,6 @@ public abstract class PartSharedItemBus<StackType extends IAEStack<StackType>> e
     private boolean lastRedstone = false;
     private boolean pendingStateUpdate = false;
     protected String oreFilterString = "";
-    protected Predicate<IAEItemStack> filterPredicate = null;
     protected final NBTFilterConfig nbtFilterConfig = new NBTFilterConfig();
     protected final BaseActionSource mySrc;
 
@@ -79,7 +79,6 @@ public abstract class PartSharedItemBus<StackType extends IAEStack<StackType>> e
     public void upgradesChanged() {
         if (getInstalledUpgrades(Upgrades.ORE_FILTER) == 0) {
             oreFilterString = "";
-            filterPredicate = null;
         }
         this.updateState();
     }
@@ -214,24 +213,21 @@ public abstract class PartSharedItemBus<StackType extends IAEStack<StackType>> e
     @Override
     public void setFilter(String filter) {
         oreFilterString = filter;
-        filterPredicate = null;
     }
 
-    protected boolean matchesNBTItemFilter(final IAEItemStack stack) {
-        if (stack == null) return false;
-        final FuzzyMode mode = this.getInstalledUpgrades(Upgrades.FUZZY) > 0
+    protected CombinedItemFilter createItemFilter() {
+        final List<IAEItemStack> configuredItems = new ArrayList<>();
+        for (int i = 0; i < this.availableSlots(); i++) {
+            if (this.config.getAEStackInSlot(i) instanceof IAEItemStack filter) configuredItems.add(filter);
+        }
+
+        final FuzzyMode fuzzyMode = this.getInstalledUpgrades(Upgrades.FUZZY) > 0
                 ? (FuzzyMode) this.getConfigManager().getSetting(Settings.FUZZY_MODE)
                 : null;
-        boolean configured = false;
-        for (int i = 0; i < this.availableSlots(); i++) {
-            if (this.config.getAEStackInSlot(i) instanceof IAEItemStack filter) {
-                configured = true;
-                if (NBTItemFilterMatcher.matchesItem(filter, stack, mode)) {
-                    return this.nbtFilterConfig.matches(stack.getItemStack());
-                }
-            }
-        }
-        return !configured && this.nbtFilterConfig.matches(stack.getItemStack());
+        final String oreExpression = this.getInstalledUpgrades(Upgrades.ORE_FILTER) > 0 ? this.oreFilterString : null;
+        final NBTFilterConfig nbtFilter = this.getInstalledUpgrades(Upgrades.NBT_FILTER) > 0 ? this.nbtFilterConfig
+                : null;
+        return new CombinedItemFilter(configuredItems, fuzzyMode, oreExpression, nbtFilter);
     }
 
     @Override
