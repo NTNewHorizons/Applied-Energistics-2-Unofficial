@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.item.ItemStack;
 
 import org.lwjgl.input.Mouse;
 
@@ -35,11 +37,11 @@ public class GuiNBTFilter extends GuiSub {
     private static final int COMPARISON_FIELD_WIDTH = 42;
     private static final int VALUE_FIELD_WIDTH = 80;
     private static final int DELETE_BUTTON_WIDTH = ROW_CONTROL_HEIGHT;
-
     private final ContainerNBTFilter containerNBTFilter;
     private final List<FilterRow> rows = new ArrayList<>();
     private GuiButton modeButton;
     private GuiButton addButton;
+    private GuiButton copyNBTButton;
     private int observedRevision = -1;
     private boolean controlsDirty;
 
@@ -80,11 +82,17 @@ public class GuiNBTFilter extends GuiSub {
         final int visibleRows = Math.min(config.getFilters().size(), MAX_VISIBLE_FILTERS);
         for (int i = 0; i < visibleRows; i++) this.addRowControls(i, config.getFilters().get(i));
 
+        final int footerY = this.guiTop + ROW_TOP + visibleRows * ROW_HEIGHT;
+        final int buttonX = this.guiLeft + BORDER_SIZE;
+        final int buttonAreaWidth = this.xSize - BORDER_SIZE * 2;
+        final int buttonWidth = (buttonAreaWidth - PADDING) / 2;
+        this.copyNBTButton = new GuiButtonExt(101, buttonX, footerY + PADDING, buttonWidth, 20, "Copy NBT");
+        this.buttonList.add(this.copyNBTButton);
         this.addButton = new GuiButtonExt(
                 100,
-                this.guiLeft + BORDER_SIZE,
-                this.guiTop + ROW_TOP + visibleRows * ROW_HEIGHT + PADDING,
-                this.xSize - BORDER_SIZE * 2,
+                buttonX + buttonWidth + PADDING,
+                footerY + PADDING,
+                buttonWidth,
                 20,
                 "Add Filter");
         this.addButton.enabled = config.getFilters().size() < MAX_VISIBLE_FILTERS;
@@ -117,7 +125,28 @@ public class GuiNBTFilter extends GuiSub {
         if (this.controlsDirty || this.observedRevision != this.containerNBTFilter.getRevision()) {
             this.rebuildControls();
         }
+        final ItemStack sourceItem = this.getStackFromHand();
+        this.copyNBTButton.enabled = sourceItem != null && sourceItem.hasTagCompound();
         super.drawScreen(mouseX, mouseY, partialTicks);
+    }
+
+    @Override
+    public boolean handleDragNDrop(final GuiContainer gui, final int mouseX, final int mouseY,
+            final ItemStack draggedStack, final int button) {
+        if (this.isOverCopyNBTButton(mouseX, mouseY) && this.copyNBTFrom(draggedStack)) {
+            return true;
+        }
+
+        if (draggedStack != null) {
+            for (final GuiButton guiButton : this.buttonList) {
+                if (guiButton.mousePressed(this.mc, mouseX, mouseY)) {
+                    this.triggerActionPerformed(guiButton);
+                    return true;
+                }
+            }
+        }
+
+        return super.handleDragNDrop(gui, mouseX, mouseY, draggedStack, button);
     }
 
     @Override
@@ -188,6 +217,8 @@ public class GuiNBTFilter extends GuiSub {
             this.addButton.enabled = false;
             this.controlsDirty = true;
             this.configurationChanged();
+        } else if (button == this.copyNBTButton) {
+            this.copyNBTFrom(this.getStackFromHand());
         } else {
             for (final FilterRow row : this.rows) {
                 if (button == row.comparisonButton) {
@@ -207,6 +238,25 @@ public class GuiNBTFilter extends GuiSub {
                 }
             }
         }
+    }
+
+    private boolean copyNBTFrom(final ItemStack sourceItem) {
+        if (sourceItem == null || !sourceItem.hasTagCompound()) {
+            return false;
+        }
+
+        this.containerNBTFilter.getConfig().replaceWithNBT(sourceItem.getTagCompound(), MAX_VISIBLE_FILTERS);
+        this.copyNBTButton.enabled = false;
+        this.controlsDirty = true;
+        this.configurationChanged();
+        return true;
+    }
+
+    private boolean isOverCopyNBTButton(final int mouseX, final int mouseY) {
+        return this.copyNBTButton != null && mouseX >= this.copyNBTButton.xPosition
+                && mouseX < this.copyNBTButton.xPosition + this.copyNBTButton.width
+                && mouseY >= this.copyNBTButton.yPosition
+                && mouseY < this.copyNBTButton.yPosition + this.copyNBTButton.height;
     }
 
     @Override

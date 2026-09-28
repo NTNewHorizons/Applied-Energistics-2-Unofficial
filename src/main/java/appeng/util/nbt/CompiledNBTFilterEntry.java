@@ -77,11 +77,32 @@ public final class CompiledNBTFilterEntry {
         }
 
         static NBTFilterValue compile(final String source) {
+            if (source.length() >= 2 && source.charAt(0) == '"' && source.charAt(source.length() - 1) == '"') {
+                return new StringValue(unescapeQuotedString(source.substring(1, source.length() - 1)));
+            }
             try {
                 return new NumericValue(new BigDecimal(source.trim()));
             } catch (final NumberFormatException ignored) {
                 return new StringValue(source);
             }
+        }
+
+        static String unescapeQuotedString(final String source) {
+            final StringBuilder result = new StringBuilder(source.length());
+            boolean escaped = false;
+            for (int i = 0; i < source.length(); i++) {
+                final char character = source.charAt(i);
+                if (escaped) {
+                    result.append(character);
+                    escaped = false;
+                } else if (character == '\\') {
+                    escaped = true;
+                } else {
+                    result.append(character);
+                }
+            }
+            if (escaped) result.append('\\');
+            return result.toString();
         }
     }
 

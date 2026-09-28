@@ -1,5 +1,6 @@
 package appeng.util.nbt;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -100,6 +101,44 @@ public class NBTFilterConfigTest {
         final NBTTagCompound root = new NBTTagCompound();
         root.setTag("stats", stats);
         assertTrue(restored.matches(root));
+    }
+
+    @Test
+    public void generatesEqualityFiltersFromNestedNbt() {
+        final NBTTagCompound stats = new NBTTagCompound();
+        stats.setLong("energy", 9_007_199_254_740_993L);
+        final NBTTagList names = new NBTTagList();
+        names.appendTag(new NBTTagString("first"));
+        names.appendTag(new NBTTagString("second"));
+        final NBTTagCompound root = new NBTTagCompound();
+        root.setTag("stats", stats);
+        root.setTag("names", names);
+        root.setString("numericString", "123");
+
+        final NBTFilterConfig config = new NBTFilterConfig();
+        config.setMode(NBTFilterMode.ANY);
+        config.replaceWithNBT(root, 25);
+
+        assertEquals(NBTFilterMode.ALL, config.getMode());
+        assertEquals(4, config.getFilters().size());
+        assertTrue(config.matches(root));
+
+        stats.setLong("energy", 9_007_199_254_740_992L);
+        assertFalse(config.matches(root));
+    }
+
+    @Test
+    public void generatedFiltersRespectTheVisibleFilterLimit() {
+        final NBTTagCompound root = new NBTTagCompound();
+        root.setInteger("a", 1);
+        root.setInteger("b", 2);
+        root.setInteger("c", 3);
+
+        final NBTFilterConfig config = new NBTFilterConfig();
+        config.replaceWithNBT(root, 2);
+
+        assertEquals(2, config.getFilters().size());
+        assertTrue(config.matches(root));
     }
 
     private static NBTFilterConfig config(final String path, final NBTComparison comparison, final String value) {

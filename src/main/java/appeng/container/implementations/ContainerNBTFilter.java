@@ -47,4 +47,5 @@ public class ContainerNBTFilter extends ContainerSubGui {
         }
         super.detectAndSendChanges();
     }
+
 }
