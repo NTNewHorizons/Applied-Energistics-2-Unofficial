@@ -33,9 +33,9 @@ public class GuiNBTFilter extends GuiSub {
     private static final int PADDING = 2;
     private static final int BORDER_SIZE = 8;
     private static final int ROW_CONTROL_HEIGHT = 12;
-    private static final int PATH_FIELD_WIDTH = 100;
+    private static final int PATH_FIELD_WIDTH = 90;
     private static final int COMPARISON_FIELD_WIDTH = 42;
-    private static final int VALUE_FIELD_WIDTH = 80;
+    private static final int VALUE_FIELD_WIDTH = 90;
     private static final int DELETE_BUTTON_WIDTH = ROW_CONTROL_HEIGHT;
     private final ContainerNBTFilter containerNBTFilter;
     private final List<FilterRow> rows = new ArrayList<>();
