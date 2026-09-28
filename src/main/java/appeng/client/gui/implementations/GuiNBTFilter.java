@@ -24,7 +24,7 @@ import cpw.mods.fml.client.config.GuiButtonExt;
 public class GuiNBTFilter extends GuiSub {
 
     private static final int MAX_VISIBLE_FILTERS = 25;
-    private static final int DISABLED_FIELD_BACKGROUND = 0xFFC6C6C6;
+    private static final int BACKGROUND_COLOR = 0xFFC6C6C6;
 
     private static final int ROW_TOP = 28;
     private static final int ROW_HEIGHT = 14;
@@ -195,7 +195,7 @@ public class GuiNBTFilter extends GuiSub {
                         row.valueField.y,
                         row.valueField.x + row.valueField.w,
                         row.valueField.y + row.valueField.h,
-                        DISABLED_FIELD_BACKGROUND);
+                        BACKGROUND_COLOR);
             }
         }
     }
