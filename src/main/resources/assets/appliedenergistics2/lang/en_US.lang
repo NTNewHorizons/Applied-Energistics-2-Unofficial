@@ -555,6 +555,8 @@ gui.tooltips.appliedenergistics2.Encode=Encode Pattern
 gui.tooltips.appliedenergistics2.EncodeDescription=Write the entered pattern to the current encoded pattern, or to an available blank pattern. Hold Shift to transfer directly to your inventory. Hold Shift+Control to encode the whole stack.
 
 gui.tooltips.appliedenergistics2.FuzzyMode=Fuzzy Comparison
+gui.tooltips.appliedenergistics2.VisualDurabilityEnabled=Visible durability matching enabled (Shift-left-click to toggle)
+gui.tooltips.appliedenergistics2.VisualDurabilityDisabled=Shift-left-click to enable visible durability matching
 gui.tooltips.appliedenergistics2.FZPercent_1=Split Damage at 1%
 gui.tooltips.appliedenergistics2.FZPercent_10=Split Damage at 10%
 gui.tooltips.appliedenergistics2.FZPercent_25=Split Damage at 25%

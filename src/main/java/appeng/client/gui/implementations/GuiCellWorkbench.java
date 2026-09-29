@@ -34,7 +34,6 @@ import appeng.core.sync.GuiBridge;
 import appeng.core.sync.network.NetworkHandler;
 import appeng.core.sync.packets.PacketSwitchGuis;
 import appeng.core.sync.packets.PacketValueConfig;
-import appeng.util.Platform;
 
 public class GuiCellWorkbench extends GuiUpgradeable {
 
@@ -231,7 +230,7 @@ public class GuiCellWorkbench extends GuiUpgradeable {
                 final boolean backwards = Mouse.isButtonDown(1);
 
                 FuzzyMode fz = (FuzzyMode) this.fuzzyMode.getCurrentValue();
-                fz = Platform.rotateEnum(fz, backwards, Settings.FUZZY_MODE.getPossibleValues());
+                fz = !backwards && isShiftKeyDown() ? fz.toggleVisualDurability() : fz.rotate(backwards);
 
                 NetworkHandler.instance.sendToServer(new PacketValueConfig("CellWorkbench.Fuzzy", fz.name()));
             } else if (btn == this.cellRestriction) {

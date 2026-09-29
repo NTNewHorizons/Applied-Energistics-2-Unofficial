@@ -299,7 +299,8 @@ public abstract class GuiUpgradeable extends AEBaseGui {
         }
 
         if (btn == this.fuzzyMode) {
-            NetworkHandler.instance.sendToServer(new PacketConfigButton(this.fuzzyMode.getSetting(), backwards));
+            NetworkHandler.instance.sendToServer(
+                    new PacketConfigButton(this.fuzzyMode.getSetting(), backwards, !backwards && isShiftKeyDown()));
         }
 
         if (btn == this.oreFilter) {
