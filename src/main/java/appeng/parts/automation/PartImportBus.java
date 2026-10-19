@@ -31,7 +31,7 @@ import appeng.util.Platform;
 import appeng.util.inv.IInventoryDestination;
 import appeng.util.inv.ItemSlot;
 import appeng.util.item.AEItemStack;
-import appeng.util.prioitylist.OreFilteredList;
+import appeng.util.prioitylist.CombinedItemFilter;
 
 public class PartImportBus extends PartBaseImportBus<IAEItemStack> implements IInventoryDestination {
 
@@ -117,7 +117,7 @@ public class PartImportBus extends PartBaseImportBus<IAEItemStack> implements II
         final int toSend = this.calculateMaximumAmountToImport(adaptor, whatToImport, inv, fzMode);
         final ItemStack newItems;
 
-        if (this.getInstalledUpgrades(Upgrades.FUZZY) > 0) {
+        if (this.shouldUseDirectFuzzyExtraction()) {
             newItems = adaptor.removeSimilarItems(
                     toSend,
                     whatToImport == null ? null : whatToImport.getItemStack(),
@@ -171,7 +171,7 @@ public class PartImportBus extends PartBaseImportBus<IAEItemStack> implements II
 
         final IAEItemStack itemAmountNotStorable;
         final ItemStack simResult;
-        if (this.getInstalledUpgrades(Upgrades.FUZZY) > 0) {
+        if (this.shouldUseDirectFuzzyExtraction()) {
             simResult = myAdaptor.simulateSimilarRemove(toSend, itemStackToImport, fzMode, this.configDestination(inv));
         } else {
             simResult = myAdaptor.simulateRemove(toSend, itemStackToImport, this.configDestination(inv));
@@ -186,6 +186,11 @@ public class PartImportBus extends PartBaseImportBus<IAEItemStack> implements II
         return toSend;
     }
 
+    private boolean shouldUseDirectFuzzyExtraction() {
+        return this.getInstalledUpgrades(Upgrades.FUZZY) > 0 && this.getInstalledUpgrades(Upgrades.ORE_FILTER) == 0
+                && this.getInstalledUpgrades(Upgrades.NBT_FILTER) == 0;
+    }
+
     private IInventoryDestination configDestination(final IMEMonitor<IAEItemStack> itemInventory) {
         this.destination = itemInventory;
         return this;
@@ -195,19 +200,16 @@ public class PartImportBus extends PartBaseImportBus<IAEItemStack> implements II
     protected boolean doOreDict(final Object myTarget, IMEMonitor<IAEItemStack> inv, final IEnergyGrid energy,
             final FuzzyMode fzMode) {
         if (!(myTarget instanceof InventoryAdaptor myAdaptor)) return false;
-        if (!oreFilterString.isEmpty()) {
-            if (filterPredicate == null) filterPredicate = OreFilteredList.makeFilter(oreFilterString);
-            for (ItemSlot slot : myAdaptor) {
-                if (this.itemToSend <= 0) break;
-                if (slot.isExtractable() && filterPredicate != null && filterPredicate.test(slot.getAEItemStack())) {
-                    while (this.itemToSend > 0) {
-                        if (this.importStuff(myAdaptor, slot.getAEItemStack(), inv, energy, fzMode)) break;
-                    }
+        final CombinedItemFilter filter = this.createItemFilter();
+        for (final ItemSlot slot : myAdaptor) {
+            if (this.itemToSend <= 0) break;
+            if (slot.isExtractable() && filter.isListed(slot.getAEItemStack())) {
+                while (this.itemToSend > 0) {
+                    if (this.importStuff(myAdaptor, slot.getAEItemStack(), inv, energy, fzMode)) break;
                 }
             }
-            return true;
         }
-        return false;
+        return true;
     }
 
     @Override

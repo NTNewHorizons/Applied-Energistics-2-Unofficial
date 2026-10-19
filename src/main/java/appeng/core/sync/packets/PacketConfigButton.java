@@ -13,6 +13,7 @@ package appeng.core.sync.packets;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 
+import appeng.api.config.FuzzyMode;
 import appeng.api.config.Settings;
 import appeng.api.util.IConfigManager;
 import appeng.api.util.IConfigurableObject;
@@ -29,24 +30,33 @@ public final class PacketConfigButton extends AppEngPacket {
 
     private final Settings option;
     private final boolean rotationDirection;
+    private final boolean toggleVisualDurability;
 
     // automatic.
     @Reflected
     public PacketConfigButton(final ByteBuf stream) {
         this.option = Settings.values()[stream.readInt()];
         this.rotationDirection = stream.readBoolean();
+        this.toggleVisualDurability = stream.readBoolean();
     }
 
     // api
     public PacketConfigButton(final Settings option, final boolean rotationDirection) {
+        this(option, rotationDirection, false);
+    }
+
+    public PacketConfigButton(final Settings option, final boolean rotationDirection,
+            final boolean toggleVisualDurability) {
         this.option = option;
         this.rotationDirection = rotationDirection;
+        this.toggleVisualDurability = toggleVisualDurability;
 
         final ByteBuf data = Unpooled.buffer();
 
         data.writeInt(this.getPacketID());
         data.writeInt(option.ordinal());
         data.writeBoolean(rotationDirection);
+        data.writeBoolean(toggleVisualDurability);
 
         this.configureWrite(data);
     }
@@ -58,10 +68,11 @@ public final class PacketConfigButton extends AppEngPacket {
             if (baseContainer.getTarget() instanceof IConfigurableObject) {
                 Object target = baseContainer.getTarget();
                 final IConfigManager cm = ((IConfigurableObject) target).getConfigManager();
-                final Enum<?> newState = Platform.rotateEnum(
-                        cm.getSetting(this.option),
-                        this.rotationDirection,
-                        this.option.getPossibleValues());
+                final Enum<?> current = cm.getSetting(this.option);
+                final Enum<?> newState = this.option == Settings.FUZZY_MODE && current instanceof FuzzyMode fuzzy
+                        ? this.toggleVisualDurability ? fuzzy.toggleVisualDurability()
+                                : fuzzy.rotate(this.rotationDirection)
+                        : Platform.rotateEnum(current, this.rotationDirection, this.option.getPossibleValues());
                 cm.putSetting(this.option, newState);
 
                 if (target instanceof IInterfaceHost interfaceHost) {

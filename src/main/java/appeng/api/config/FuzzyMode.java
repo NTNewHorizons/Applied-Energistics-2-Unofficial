@@ -28,7 +28,18 @@ public enum FuzzyMode {
     PERCENT_50(50),
     PERCENT_25(75),
     PERCENT_10(90),
-    PERCENT_1(99);
+    PERCENT_1(99),
+    // Keep the original seven ordinals and names unchanged for existing saved settings.
+    IGNORE_ALL_VISUAL(-1),
+    PERCENT_99_VISUAL(0),
+    PERCENT_75_VISUAL(25),
+    PERCENT_50_VISUAL(50),
+    PERCENT_25_VISUAL(75),
+    PERCENT_10_VISUAL(90),
+    PERCENT_1_VISUAL(99);
+
+    private static final int MODES_PER_STYLE = 7;
+    private static final FuzzyMode[] MODES = values();
 
     public final float breakPoint;
     public final float percentage;
@@ -40,6 +51,24 @@ public enum FuzzyMode {
 
     public int calculateBreakPoint(final int maxDamage) {
         return (int) ((this.percentage * maxDamage) / 100.0f);
+    }
+
+    public boolean usesVisualDurability() {
+        return this.ordinal() >= MODES_PER_STYLE;
+    }
+
+    public FuzzyMode legacyMode() {
+        return MODES[this.ordinal() % MODES_PER_STYLE];
+    }
+
+    public FuzzyMode toggleVisualDurability() {
+        return MODES[(this.ordinal() + MODES_PER_STYLE) % MODES.length];
+    }
+
+    public FuzzyMode rotate(final boolean backwards) {
+        final int style = this.usesVisualDurability() ? MODES_PER_STYLE : 0;
+        final int next = (this.ordinal() % MODES_PER_STYLE + (backwards ? MODES_PER_STYLE - 1 : 1)) % MODES_PER_STYLE;
+        return MODES[style + next];
     }
 
     @Nonnull

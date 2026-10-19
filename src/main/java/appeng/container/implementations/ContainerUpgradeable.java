@@ -221,8 +221,6 @@ public abstract class ContainerUpgradeable extends AEBaseContainer implements IO
 
     @Override
     public boolean isSlotEnabled(final int idx) {
-        if (this.getUpgradeable().getInstalledUpgrades(Upgrades.ORE_FILTER) > 0) return false;
-
         if (idx == 0) return true;
 
         final int upgrades = this.getUpgradeable().getInstalledUpgrades(Upgrades.CAPACITY);

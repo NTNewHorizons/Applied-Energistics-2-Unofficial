@@ -274,7 +274,14 @@ public final class ItemList implements IItemList<IAEItemStack> {
         if (this.records == null) {
             initNavigableSet();
         }
-        return this.records.subSet(low, true, high, true).descendingSet();
+        final Collection<IAEItemStack> candidates = this.records.subSet(low, true, high, true).descendingSet();
+        if (!fuzzy.usesVisualDurability()) return candidates;
+
+        final Collection<IAEItemStack> matches = new LinkedList<>();
+        for (final IAEItemStack candidate : candidates) {
+            if (filter.fuzzyComparison(candidate, fuzzy)) matches.add(candidate);
+        }
+        return matches;
     }
 
     private void initNavigableSet() {

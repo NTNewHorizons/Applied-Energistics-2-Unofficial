@@ -90,6 +90,11 @@ public class GuiStorageBus extends GuiUpgradeable {
                 this.guiTop + 108,
                 Settings.ACTIONS,
                 ActionItems.ORE_FILTER);
+        this.nbtFilter = new GuiImgButton(
+                this.guiLeft - 18,
+                this.guiTop + 108,
+                Settings.ACTIONS,
+                ActionItems.NBT_FILTER);
 
         this.buttonList.add(
                 this.priority = new GuiTabButton(
@@ -106,6 +111,7 @@ public class GuiStorageBus extends GuiUpgradeable {
         this.buttonList.add(this.partition);
         this.buttonList.add(this.clear);
         this.buttonList.add(this.oreFilter);
+        this.buttonList.add(this.nbtFilter);
     }
 
     @Override
@@ -156,13 +162,10 @@ public class GuiStorageBus extends GuiUpgradeable {
     public void drawBG(int offsetX, int offsetY, int mouseX, int mouseY) {
         super.drawBG(offsetX, offsetY, mouseX, mouseY);
 
-        final boolean isOreDict = this.containerStorageBus.getUpgradeable().getInstalledUpgrades(Upgrades.ORE_FILTER)
-                > 0;
-        final int capacity = isOreDict ? 0
-                : this.containerStorageBus.getUpgradeable().getInstalledUpgrades(Upgrades.CAPACITY);
+        final int capacity = this.containerStorageBus.getUpgradeable().getInstalledUpgrades(Upgrades.CAPACITY);
 
         for (int i = 0; i < 7; i++) {
-            if (isOreDict || i >= capacity + 2) {
+            if (i >= capacity + 2) {
                 // fadeout slots
                 this.drawTexturedModalRect(offsetX + 7, offsetY + 28 + (18 * i), 7, 46, 162, 18);
             } else {
@@ -226,10 +229,7 @@ public class GuiStorageBus extends GuiUpgradeable {
     }
 
     protected void updateSlotVisibility() {
-        final boolean isOreDict = this.containerStorageBus.getUpgradeable().getInstalledUpgrades(Upgrades.ORE_FILTER)
-                > 0;
-        final int capacity = isOreDict ? -2
-                : this.containerStorageBus.getUpgradeable().getInstalledUpgrades(Upgrades.CAPACITY);
+        final int capacity = this.containerStorageBus.getUpgradeable().getInstalledUpgrades(Upgrades.CAPACITY);
 
         for (VirtualMEPhantomSlot slot : this.configSlots) {
             slot.setHidden(slot.getSlotIndex() >= (18 + (9 * capacity)));

@@ -11,7 +11,9 @@
 package appeng.core.sync.packets;
 
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
+import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 
 import appeng.client.gui.AEBaseGui;
@@ -81,13 +83,23 @@ public class PacketSwitchGuis extends AppEngPacket {
 
             if (context != null) {
                 final TileEntity te = context.getTile();
+                final ItemStack carriedItem = player.inventory.getItemStack();
+                player.inventory.setItemStack(null);
 
-                if (this.newGui == null) {
-                    final PrimaryGui pGui = bc.getPrimaryGui();
-                    assert pGui != null;
-                    pGui.open(player);
-                } else {
-                    Platform.openGUI(player, te, context.getSide(), this.newGui, bc.getTargetSlotIndex());
+                try {
+                    if (this.newGui == null) {
+                        final PrimaryGui pGui = bc.getPrimaryGui();
+                        assert pGui != null;
+                        pGui.open(player);
+                    } else {
+                        Platform.openGUI(player, te, context.getSide(), this.newGui, bc.getTargetSlotIndex());
+                    }
+
+                } finally {
+                    player.inventory.setItemStack(carriedItem);
+                    if (player instanceof EntityPlayerMP serverPlayer) {
+                        serverPlayer.updateHeldItem();
+                    }
                 }
             }
 
