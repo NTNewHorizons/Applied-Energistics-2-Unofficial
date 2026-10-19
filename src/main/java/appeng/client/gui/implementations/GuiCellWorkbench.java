@@ -230,7 +230,7 @@ public class GuiCellWorkbench extends GuiUpgradeable {
                 final boolean backwards = Mouse.isButtonDown(1);
 
                 FuzzyMode fz = (FuzzyMode) this.fuzzyMode.getCurrentValue();
-                fz = !backwards && isShiftKeyDown() ? fz.toggleVisualDurability() : fz.rotate(backwards);
+                fz = isShiftKeyDown() ? fz.toggleVisualDurability() : fz.rotate(backwards);
 
                 NetworkHandler.instance.sendToServer(new PacketValueConfig("CellWorkbench.Fuzzy", fz.name()));
             } else if (btn == this.cellRestriction) {

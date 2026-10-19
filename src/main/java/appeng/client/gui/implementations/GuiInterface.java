@@ -359,7 +359,7 @@ public class GuiInterface extends GuiUpgradeable {
 
         if (btn == this.fuzzyMode) {
             NetworkHandler.instance.sendToServer(
-                    new PacketConfigButton(this.fuzzyMode.getSetting(), backwards, !backwards && isShiftKeyDown()));
+                    new PacketConfigButton(this.fuzzyMode.getSetting(), backwards, isShiftKeyDown()));
         }
     }
 
