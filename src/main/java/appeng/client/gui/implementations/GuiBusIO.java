@@ -97,14 +97,12 @@ public class GuiBusIO extends GuiUpgradeable {
         super.drawBG(offsetX, offsetY, mouseX, mouseY);
 
         final int capacity = this.cvb.getUpgradeable().getInstalledUpgrades(Upgrades.CAPACITY);
-        final boolean hasOreFilter = this.cvb.getUpgradeable().getInstalledUpgrades(Upgrades.ORE_FILTER) != 0;
         final boolean hasFirstTier = capacity > 0;
         final boolean hasSecondTier = capacity > 1;
 
         for (int y = 0; y < 3; y++) {
             for (int x = 0; x < 3; x++) {
-                final int slotTextureX = hasOreFilter // true == inactive
-                        || (!hasSecondTier && slotSequence[x + y * 3] > 4)
+                final int slotTextureX = (!hasSecondTier && slotSequence[x + y * 3] > 4)
                         || (!hasFirstTier && slotSequence[x + y * 3] != 0) ? 79 : 61;
                 this.drawTexturedModalRect(offsetX + 61 + (18 * x), offsetY + 21 + (18 * y), slotTextureX, 21, 18, 18);
             }
@@ -116,11 +114,10 @@ public class GuiBusIO extends GuiUpgradeable {
         super.handleButtonVisibility();
 
         final int capacity = this.cvb.getUpgradeable().getInstalledUpgrades(Upgrades.CAPACITY);
-        final boolean hasOreFilter = this.cvb.getUpgradeable().getInstalledUpgrades(Upgrades.ORE_FILTER) != 0;
-        final boolean firstTier = capacity > 0 && !hasOreFilter;
-        final boolean secondTier = capacity > 1 && !hasOreFilter;
+        final boolean firstTier = capacity > 0;
+        final boolean secondTier = capacity > 1;
 
-        this.virtualSlots[0].setHidden(hasOreFilter);
+        this.virtualSlots[0].setHidden(false);
 
         this.virtualSlots[1].setHidden(!firstTier);
         this.virtualSlots[2].setHidden(!firstTier);

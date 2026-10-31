@@ -657,6 +657,12 @@ public class GuiImgButton extends GuiButton implements ITooltip {
                     ButtonToolTips.OreFilter,
                     ButtonToolTips.OreFilterHint);
             this.registerApp(
+                    75,
+                    Settings.ACTIONS,
+                    ActionItems.NBT_FILTER,
+                    ButtonToolTips.NBTFilter,
+                    ButtonToolTips.NBTFilterHint);
+            this.registerApp(
                     71,
                     Settings.ACTIONS,
                     ActionItems.DOUBLE,
@@ -1176,6 +1182,23 @@ public class GuiImgButton extends GuiButton implements ITooltip {
             this.drawTexturedModalRect(0, 0, uv_x * 16, uv_y * 16, 16, 16);
             if (this.isHalfSize()) GL11.glScalef(2f, 2f, 2f);
             GL11.glTranslatef(-this.xPosition, -this.yPosition, 0.0F);
+            if (this.currentValue instanceof FuzzyMode fuzzy && fuzzy.usesVisualDurability()) {
+                final int color = 0x7F007F7F;
+                drawRect(this.xPosition, this.yPosition, this.xPosition + this.width, this.yPosition + 1, color);
+                drawRect(
+                        this.xPosition,
+                        this.yPosition + this.height - 1,
+                        this.xPosition + this.width,
+                        this.yPosition + this.height,
+                        color);
+                drawRect(this.xPosition, this.yPosition, this.xPosition + 1, this.yPosition + this.height, color);
+                drawRect(
+                        this.xPosition + this.width - 1,
+                        this.yPosition,
+                        this.xPosition + this.width,
+                        this.yPosition + this.height,
+                        color);
+            }
             this.mouseDragged(mc, mouseX, mouseY);
         }
         ScreenColor.resetGuiColor();
@@ -1183,7 +1206,7 @@ public class GuiImgButton extends GuiButton implements ITooltip {
 
     private int getIconIndex() {
         if (this.buttonSetting != null && this.currentValue != null) {
-            final ButtonAppearance app = appearances.get(new EnumPair(this.buttonSetting, this.currentValue));
+            final ButtonAppearance app = appearances.get(new EnumPair(this.buttonSetting, this.appearanceValue()));
             if (app == null) {
                 return 256 - 1;
             }
@@ -1207,7 +1230,7 @@ public class GuiImgButton extends GuiButton implements ITooltip {
         ButtonAppearance buttonAppearance = null;
 
         if (this.buttonSetting != null && this.currentValue != null) {
-            buttonAppearance = appearances.get(new EnumPair(this.buttonSetting, this.currentValue));
+            buttonAppearance = appearances.get(new EnumPair(this.buttonSetting, this.appearanceValue()));
             if (buttonAppearance == null) {
                 return "No Such Message";
             }
@@ -1239,6 +1262,12 @@ public class GuiImgButton extends GuiButton implements ITooltip {
             }
 
             value = PATTERN_NEW_LINE.matcher(value).replaceAll("\n");
+
+            if (this.currentValue instanceof FuzzyMode fuzzy) {
+                value += "\n" + StatCollector.translateToLocal(
+                        fuzzy.usesVisualDurability() ? "gui.tooltips.appliedenergistics2.VisualDurabilityEnabled"
+                                : "gui.tooltips.appliedenergistics2.VisualDurabilityDisabled");
+            }
 
             if (Platform.isServer()) return name + '\n' + value;
 
@@ -1282,6 +1311,10 @@ public class GuiImgButton extends GuiButton implements ITooltip {
         if (this.currentValue != e) {
             this.currentValue = e;
         }
+    }
+
+    private Enum appearanceValue() {
+        return this.currentValue instanceof FuzzyMode fuzzy ? fuzzy.legacyMode() : this.currentValue;
     }
 
     public boolean isHalfSize() {

@@ -43,10 +43,10 @@ import appeng.items.contents.CellConfigLegacy;
 import appeng.items.contents.CellUpgrades;
 import appeng.tile.inventory.IAEStackInventory;
 import appeng.util.Platform;
+import appeng.util.prioitylist.CombinedItemFilter;
 import appeng.util.prioitylist.FuzzyPriorityList;
 import appeng.util.prioitylist.IPartitionList;
 import appeng.util.prioitylist.MergedPriorityList;
-import appeng.util.prioitylist.OreFilteredList;
 import appeng.util.prioitylist.PrecisePriorityList;
 
 public class ItemViewCell extends AEBaseItem implements ICellWorkbenchItem {
@@ -92,26 +92,22 @@ public class ItemViewCell extends AEBaseItem implements ICellWorkbenchItem {
                     }
                 }
 
+                final IItemList priorityList = AEApi.instance().storage().createAEStackList();
+
+                for (int x = 0; x < config.getSizeInventory(); x++) {
+                    final IAEStack<?> aes = config.getAEStackInSlot(x);
+                    if (aes != null) priorityList.add(aes);
+                }
+
                 if (hasOreFilter) {
-                    if (!filter.isEmpty()) {
-                        myMergedList.addNewList(new OreFilteredList(filter), !hasInverter);
-                    }
-                } else {
-                    final IItemList priorityList = AEApi.instance().storage().createAEStackList();
-
-                    for (int x = 0; x < config.getSizeInventory(); x++) {
-                        final IAEStack<?> aes = config.getAEStackInSlot(x);
-                        if (aes != null) {
-                            priorityList.add(aes);
-                        }
-                    }
-
-                    if (!priorityList.isEmpty()) {
-                        if (hasFuzzy) {
-                            myMergedList.addNewList(new FuzzyPriorityList(priorityList, fzMode), !hasInverter);
-                        } else {
-                            myMergedList.addNewList(new PrecisePriorityList(priorityList), !hasInverter);
-                        }
+                    myMergedList.addNewList(
+                            new CombinedItemFilter(priorityList, hasFuzzy ? fzMode : null, filter, null),
+                            !hasInverter);
+                } else if (!priorityList.isEmpty()) {
+                    if (hasFuzzy) {
+                        myMergedList.addNewList(new FuzzyPriorityList(priorityList, fzMode), !hasInverter);
+                    } else {
+                        myMergedList.addNewList(new PrecisePriorityList(priorityList), !hasInverter);
                     }
                 }
                 myPartitionList = myMergedList;

@@ -1128,31 +1128,10 @@ public class Platform {
          * b.itemID ) { return (a.getItemDamage() > 0) == (b.getItemDamage() > 0); }
          */
 
-        // test damageable items..
-        if (a.getItem() != null && b.getItem() != null && a.getItem().isDamageable() && a.getItem() == b.getItem()) {
-            try {
-                if (mode == FuzzyMode.IGNORE_ALL) {
-                    return true;
-                } else if (mode == FuzzyMode.PERCENT_99) {
-                    return (a.getItemDamageForDisplay() > 1) == (b.getItemDamageForDisplay() > 1);
-                } else {
-                    final float percentDamagedOfA = (float) a.getItemDamageForDisplay() / (float) a.getMaxDamage();
-                    final float percentDamagedOfB = (float) b.getItemDamageForDisplay() / (float) b.getMaxDamage();
-
-                    return (percentDamagedOfA > mode.breakPoint) == (percentDamagedOfB > mode.breakPoint);
-                }
-            } catch (final Throwable e) {
-                if (mode == FuzzyMode.IGNORE_ALL) {
-                    return true;
-                } else if (mode == FuzzyMode.PERCENT_99) {
-                    return (a.getItemDamage() > 1) == (b.getItemDamage() > 1);
-                } else {
-                    final float percentDamagedOfA = (float) a.getItemDamage() / (float) a.getMaxDamage();
-                    final float percentDamagedOfB = (float) b.getItemDamage() / (float) b.getMaxDamage();
-
-                    return (percentDamagedOfA > mode.breakPoint) == (percentDamagedOfB > mode.breakPoint);
-                }
-            }
+        // Test both ordinary item damage and Forge's visual durability API. Some modded items keep their durability in
+        // NBT and only expose it through the bar rendered by Item#getDurabilityForDisplay.
+        if (a.getItem() != null && a.getItem() == b.getItem() && FuzzyItemDurability.isComparable(a, b, mode)) {
+            return FuzzyItemDurability.matches(a, b, mode);
         }
 
         final OreReference aOR = OreHelper.INSTANCE.isOre(a);

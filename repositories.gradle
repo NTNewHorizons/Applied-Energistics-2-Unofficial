@@ -3,6 +3,10 @@
 repositories {
     mavenLocal()
     maven {
+        name 'JitPack'
+        url 'https://jitpack.io'
+    }
+    maven {
         name 'MM repo'
         url 'https://maven.k-4u.nl/'
     }

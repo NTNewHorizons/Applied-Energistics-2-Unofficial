@@ -10,7 +10,8 @@
 
 package appeng.parts.automation;
 
-import java.util.function.Predicate;
+import java.util.ArrayList;
+import java.util.List;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -35,6 +36,7 @@ import appeng.api.storage.data.IAEStack;
 import appeng.api.storage.data.IAEStackType;
 import appeng.api.util.IConfigManager;
 import appeng.core.sync.GuiBridge;
+import appeng.helpers.INBTFilterable;
 import appeng.helpers.IOreFilterable;
 import appeng.hooks.TickHandler;
 import appeng.me.GridAccessException;
@@ -42,11 +44,13 @@ import appeng.tile.inventory.IAEStackInventory;
 import appeng.tile.inventory.IIAEStackInventory;
 import appeng.util.InventoryAdaptor;
 import appeng.util.Platform;
+import appeng.util.nbt.NBTFilterConfig;
+import appeng.util.prioitylist.CombinedItemFilter;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
 public abstract class PartSharedItemBus<StackType extends IAEStack<StackType>> extends PartUpgradeable
-        implements IGridTickable, IOreFilterable, IIAEStackInventory {
+        implements IGridTickable, IOreFilterable, INBTFilterable, IIAEStackInventory {
 
     private final IAEStackInventory config = new IAEStackInventory(this, 9);
     private int cachedAdaptorHash = 0;
@@ -54,7 +58,7 @@ public abstract class PartSharedItemBus<StackType extends IAEStack<StackType>> e
     private boolean lastRedstone = false;
     private boolean pendingStateUpdate = false;
     protected String oreFilterString = "";
-    protected Predicate<IAEItemStack> filterPredicate = null;
+    protected final NBTFilterConfig nbtFilterConfig = new NBTFilterConfig();
     protected final BaseActionSource mySrc;
 
     public PartSharedItemBus(final ItemStack is) {
@@ -75,7 +79,6 @@ public abstract class PartSharedItemBus<StackType extends IAEStack<StackType>> e
     public void upgradesChanged() {
         if (getInstalledUpgrades(Upgrades.ORE_FILTER) == 0) {
             oreFilterString = "";
-            filterPredicate = null;
         }
         this.updateState();
     }
@@ -85,6 +88,7 @@ public abstract class PartSharedItemBus<StackType extends IAEStack<StackType>> e
         super.readFromNBT(extra);
         this.config.readFromNBT(extra, "config");
         this.oreFilterString = extra.getString("filter");
+        this.nbtFilterConfig.readFromNBT(extra);
     }
 
     @Override
@@ -92,6 +96,7 @@ public abstract class PartSharedItemBus<StackType extends IAEStack<StackType>> e
         super.writeToNBT(extra);
         this.config.writeToNBT(extra, "config");
         extra.setString("filter", this.oreFilterString);
+        this.nbtFilterConfig.writeToNBT(extra);
     }
 
     @Override
@@ -208,7 +213,33 @@ public abstract class PartSharedItemBus<StackType extends IAEStack<StackType>> e
     @Override
     public void setFilter(String filter) {
         oreFilterString = filter;
-        filterPredicate = null;
+    }
+
+    protected CombinedItemFilter createItemFilter() {
+        final List<IAEItemStack> configuredItems = new ArrayList<>();
+        for (int i = 0; i < this.availableSlots(); i++) {
+            if (this.config.getAEStackInSlot(i) instanceof IAEItemStack filter) configuredItems.add(filter);
+        }
+
+        final FuzzyMode fuzzyMode = this.getInstalledUpgrades(Upgrades.FUZZY) > 0
+                ? (FuzzyMode) this.getConfigManager().getSetting(Settings.FUZZY_MODE)
+                : null;
+        final String oreExpression = this.getInstalledUpgrades(Upgrades.ORE_FILTER) > 0 ? this.oreFilterString : null;
+        final NBTFilterConfig nbtFilter = this.getInstalledUpgrades(Upgrades.NBT_FILTER) > 0 ? this.nbtFilterConfig
+                : null;
+        return new CombinedItemFilter(configuredItems, fuzzyMode, oreExpression, nbtFilter);
+    }
+
+    @Override
+    public NBTFilterConfig getNBTFilterConfig() {
+        return this.nbtFilterConfig;
+    }
+
+    @Override
+    public void setNBTFilterConfig(final NBTFilterConfig config) {
+        this.nbtFilterConfig.replaceWith(config);
+        if (this.getHost() != null) this.getHost().markForSave();
+        this.updateState();
     }
 
     @Override
