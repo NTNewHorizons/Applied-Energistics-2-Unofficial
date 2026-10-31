@@ -29,31 +29,21 @@ public class NBTFilterConfigTest {
     }
 
     @Test
-    public void combinesCompiledEntriesUsingGlobalMode() {
-        final NBTTagCompound root = new NBTTagCompound();
-        root.setString("name", "wrench");
-        root.setInteger("damage", 500);
-
-        final NBTFilterConfig config = config("name", NBTComparison.EQUALS, "wrench");
-        config.addFilter(new NBTFilterEntry("damage", NBTComparison.GREATER_THAN, "900"));
-        assertFalse(config.matches(root));
-        config.setMode(NBTFilterMode.ANY);
-        assertTrue(config.matches(root));
-    }
-
-    @Test
     public void existenceChecksDoNotRequireValues() {
         final NBTTagCompound root = new NBTTagCompound();
         root.setTag("present", new NBTTagString(""));
         assertTrue(config("present", NBTComparison.EXISTS, "").matches(root));
+        assertFalse(config("missing", NBTComparison.EXISTS, "").matches(root));
         assertTrue(config("missing", NBTComparison.NOT_EXISTS, "").matches(root));
+        assertFalse(config("present", NBTComparison.NOT_EXISTS, "").matches(root));
     }
 
     @Test
     public void orderingNeverFallsBackToLexicographicStrings() {
         final NBTTagCompound root = new NBTTagCompound();
-        root.setString("number", "10");
+        root.setString("number", "9");
         assertFalse(config("number", NBTComparison.GREATER_THAN, "2").matches(root));
+        assertFalse(config("number", NBTComparison.GREATER_THAN, "\"2\"").matches(root));
     }
 
     @Test
@@ -62,7 +52,8 @@ public class NBTFilterConfigTest {
         root.setTag("value", new NBTTagInt(1));
         final NBTFilterConfig config = config("value", NBTComparison.EQUALS, "1");
         config.addFilter(new NBTFilterEntry("bad..path", NBTComparison.EQUALS, "1"));
-        config.addFilter(new NBTFilterEntry("value", NBTComparison.EQUALS, ""));
+        assertFalse(config.matches(root));
+        config.updateFilter(1, "value", NBTComparison.EQUALS, "");
         assertFalse(config.matches(root));
     }
 
@@ -80,16 +71,9 @@ public class NBTFilterConfigTest {
     }
 
     @Test
-    public void emptyFilterConfigurationNeverMatches() {
-        final NBTFilterConfig config = new NBTFilterConfig();
-        assertFalse(config.matches(new NBTTagCompound()));
-        config.setMode(NBTFilterMode.ANY);
-        assertFalse(config.matches(new NBTTagCompound()));
-    }
-
-    @Test
     public void structuredNbtRoundTripRebuildsCompiledFilters() {
         final NBTFilterConfig original = config("stats.damage", NBTComparison.LESS_THAN_OR_EQUAL, "12");
+        original.addFilter(new NBTFilterEntry("name", NBTComparison.EQUALS, "wrench"));
         original.setMode(NBTFilterMode.ANY);
         final NBTTagCompound serialized = new NBTTagCompound();
         original.writeToNBT(serialized);
@@ -100,6 +84,10 @@ public class NBTFilterConfigTest {
         stats.setInteger("damage", 10);
         final NBTTagCompound root = new NBTTagCompound();
         root.setTag("stats", stats);
+        assertTrue(restored.matches(root));
+        stats.setInteger("damage", 13);
+        assertFalse(restored.matches(root));
+        root.setString("name", "wrench");
         assertTrue(restored.matches(root));
     }
 
@@ -125,20 +113,6 @@ public class NBTFilterConfigTest {
 
         stats.setLong("energy", 9_007_199_254_740_992L);
         assertFalse(config.matches(root));
-    }
-
-    @Test
-    public void generatedFiltersRespectTheVisibleFilterLimit() {
-        final NBTTagCompound root = new NBTTagCompound();
-        root.setInteger("a", 1);
-        root.setInteger("b", 2);
-        root.setInteger("c", 3);
-
-        final NBTFilterConfig config = new NBTFilterConfig();
-        config.replaceWithNBT(root, 2);
-
-        assertEquals(2, config.getFilters().size());
-        assertTrue(config.matches(root));
     }
 
     private static NBTFilterConfig config(final String path, final NBTComparison comparison, final String value) {

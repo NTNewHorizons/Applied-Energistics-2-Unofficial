@@ -27,16 +27,21 @@ public class CombinedItemFilterTest {
     public void allInstalledFiltersAreCombinedWithAnd() {
         final Item item = new Item().setMaxDamage(100);
 
-        final CombinedItemFilter filter = new CombinedItemFilter(
-                Arrays.asList(stack(item, 0, 99)),
-                FuzzyMode.IGNORE_ALL,
-                true,
-                candidate -> candidate.getItem() == item,
-                rules());
+        for (final FuzzyMode mode : Arrays.asList(null, FuzzyMode.IGNORE_ALL)) {
+            final CombinedItemFilter filter = new CombinedItemFilter(
+                    Arrays.asList(stack(item, 0, 99)),
+                    mode,
+                    true,
+                    candidate -> candidate.getItemStack().getTagCompound().getInteger("level") != 20,
+                    rules());
+            final int damage = mode == null ? 0 : 10;
 
-        assertTrue(filter.isListed(stack(item, 10, 10)));
-        assertFalse(filter.isListed(stack(item, 10, 1)));
-        assertFalse(filter.isListed(stack(new Item(), 10, 10)));
+            assertTrue(filter.isListed(stack(item, damage, 10)));
+            assertFalse(filter.isListed(stack(item, damage, 1)));
+            assertFalse(filter.isListed(stack(item, damage, 20)));
+            assertFalse(filter.isListed(stack(new Item(), damage, 10)));
+            if (mode == null) assertFalse(filter.isListed(stack(item, 10, 10)));
+        }
     }
 
     @Test
@@ -60,7 +65,12 @@ public class CombinedItemFilterTest {
     }
 
     @Test
-    public void installedEmptyNbtFilterPreservesExistingRejectAllBehavior() {
+    public void nbtOnlyFilterEnforcesRulesAndRejectsEverythingWhenEmpty() {
+        final CombinedItemFilter configured = new CombinedItemFilter(Collections.emptyList(), null, null, rules());
+        assertFalse(configured.isEmpty());
+        assertTrue(configured.isListed(stack(new Item(), 0, 10)));
+        assertFalse(configured.isListed(stack(new Item(), 0, 1)));
+
         final CombinedItemFilter filter = new CombinedItemFilter(
                 Collections.emptyList(),
                 null,
