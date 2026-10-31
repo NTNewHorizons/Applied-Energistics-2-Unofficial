@@ -126,7 +126,7 @@ public class GuiStorageBus extends GuiUpgradeable {
         super.handleButtonVisibility();
         if (this.reshuffleAccess != null) {
             this.reshuffleAccess.yPosition = this.guiTop
-                    + (this.fuzzyMode.visible || this.oreFilter.visible ? 128 : 108);
+                    + (this.fuzzyMode.visible || this.oreFilter.visible || this.nbtFilter.visible ? 128 : 108);
         }
     }
 
