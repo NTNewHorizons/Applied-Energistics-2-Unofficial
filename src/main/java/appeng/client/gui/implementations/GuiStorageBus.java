@@ -49,6 +49,7 @@ public class GuiStorageBus extends GuiUpgradeable {
     private GuiImgButton partition;
     private GuiImgButton clear;
     private GuiImgButton extractionMode;
+    private GuiImgButton reshuffleAccess;
     private VirtualMEPhantomSlot[] configSlots;
     private final ContainerStorageBus containerStorageBus;
     private final IStorageBus storageBus;
@@ -90,6 +91,11 @@ public class GuiStorageBus extends GuiUpgradeable {
                 this.guiTop + 108,
                 Settings.ACTIONS,
                 ActionItems.ORE_FILTER);
+        this.reshuffleAccess = new GuiImgButton(
+                this.guiLeft - 18,
+                this.guiTop + 108,
+                Settings.RESHUFFLE_ACCESS,
+                AccessRestriction.READ_WRITE);
         this.nbtFilter = new GuiImgButton(
                 this.guiLeft - 18,
                 this.guiTop + 108,
@@ -112,6 +118,16 @@ public class GuiStorageBus extends GuiUpgradeable {
         this.buttonList.add(this.clear);
         this.buttonList.add(this.oreFilter);
         this.buttonList.add(this.nbtFilter);
+        this.buttonList.add(this.reshuffleAccess);
+    }
+
+    @Override
+    protected void handleButtonVisibility() {
+        super.handleButtonVisibility();
+        if (this.reshuffleAccess != null) {
+            this.reshuffleAccess.yPosition = this.guiTop
+                    + (this.fuzzyMode.visible || this.oreFilter.visible ? 128 : 108);
+        }
     }
 
     @Override
@@ -152,6 +168,9 @@ public class GuiStorageBus extends GuiUpgradeable {
             }
             if (this.partition != null) {
                 this.partition.set(csb.getPartitionMode());
+            }
+            if (this.reshuffleAccess != null) {
+                this.reshuffleAccess.set(csb.getReshuffleAccess());
             }
         }
 
@@ -202,6 +221,8 @@ public class GuiStorageBus extends GuiUpgradeable {
             } else if (btn == this.storageFilter) {
                 NetworkHandler.instance
                         .sendToServer(new PacketConfigButton(this.storageFilter.getSetting(), backwards));
+            } else if (btn == this.reshuffleAccess) {
+                NetworkHandler.instance.sendToServer(new PacketConfigButton(Settings.RESHUFFLE_ACCESS, backwards));
             }
         } catch (final IOException e) {
             AELog.debug(e);

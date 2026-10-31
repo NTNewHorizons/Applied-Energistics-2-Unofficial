@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import appeng.api.networking.crafting.ICraftingPatternDetails;
 import appeng.api.storage.data.IAEItemStack;
 import appeng.crafting.v2.CraftingJobV2;
 import appeng.crafting.v2.CraftingRequest;
@@ -42,7 +43,7 @@ public class CraftingV2Tests {
 
     static World dummyWorld = null;
     static boolean mixedMetalTestRecipeRegistered = false;
-    final int SIMPLE_SIMULATION_TIMEOUT_MS = 150;
+    final int MAX_SIMULATION_STEPS = 10_000;
 
     final ItemStack bronzePlate, bronzeDoublePlate, bronzeIngot, gtHammer, singleUseGtHammer;
     final ItemStack ironDust, ironIngot, ironPlate, goldDust, goldIngot, goldBlock;
@@ -92,8 +93,8 @@ public class CraftingV2Tests {
         return stack;
     }
 
-    private void simulateJobAndCheck(CraftingJobV2 job, int timeoutMs) {
-        job.simulateFor(timeoutMs);
+    private void simulateJobAndCheck(CraftingJobV2 job, int maxSteps) {
+        for (int step = 0; step < maxSteps && job.simulateFor(0); step++) {}
 
         assertTrue(job.isDone());
         assertFalse(job.isCancelled());
@@ -151,7 +152,7 @@ public class CraftingV2Tests {
     void noPatternSimulation() {
         MockAESystem aeSystem = new MockAESystem(dummyWorld);
         final CraftingJobV2 job = aeSystem.makeCraftingJob(new ItemStack(Items.stick, 13));
-        simulateJobAndCheck(job, SIMPLE_SIMULATION_TIMEOUT_MS);
+        simulateJobAndCheck(job, MAX_SIMULATION_STEPS);
         assertTrue(job.isSimulation());
         assertEquals(job.getOutput(), AEItemStack.create(new ItemStack(Items.stick, 13)));
         assertJobPlanEquals(job, AEItemStack.create(new ItemStack(Items.stick, 13)));
@@ -166,7 +167,7 @@ public class CraftingV2Tests {
         // Another pattern that shouldn't match
         addDummyGappleRecipe(aeSystem);
         final CraftingJobV2 job = aeSystem.makeCraftingJob(new ItemStack(Items.stick, 13));
-        simulateJobAndCheck(job, SIMPLE_SIMULATION_TIMEOUT_MS);
+        simulateJobAndCheck(job, MAX_SIMULATION_STEPS);
         assertTrue(job.isSimulation());
         assertEquals(job.getOutput(), AEItemStack.create(new ItemStack(Items.stick, 13)));
         assertJobPlanEquals(
@@ -182,7 +183,7 @@ public class CraftingV2Tests {
         aeSystem.addStoredItem(new ItemStack(Items.diamond, 64));
         aeSystem.addStoredItem(new ItemStack(Items.gold_ingot, 64));
         final CraftingJobV2 job = aeSystem.makeCraftingJob(new ItemStack(Items.stick, 13));
-        simulateJobAndCheck(job, SIMPLE_SIMULATION_TIMEOUT_MS);
+        simulateJobAndCheck(job, MAX_SIMULATION_STEPS);
         assertTrue(job.isSimulation());
         assertEquals(job.getOutput(), AEItemStack.create(new ItemStack(Items.stick, 13)));
         assertJobPlanEquals(job, AEItemStack.create(new ItemStack(Items.stick, 13)));
@@ -199,7 +200,7 @@ public class CraftingV2Tests {
         // Another pattern that shouldn't match
         addDummyGappleRecipe(aeSystem);
         final CraftingJobV2 job = aeSystem.makeCraftingJob(new ItemStack(Items.stick, 13));
-        simulateJobAndCheck(job, SIMPLE_SIMULATION_TIMEOUT_MS);
+        simulateJobAndCheck(job, MAX_SIMULATION_STEPS);
         assertFalse(job.isSimulation());
         assertEquals(job.getOutput(), AEItemStack.create(new ItemStack(Items.stick, 13)));
         assertJobPlanEquals(
@@ -258,7 +259,7 @@ public class CraftingV2Tests {
         // Another pattern that shouldn't match
         addDummyGappleRecipe(aeSystem);
         final CraftingJobV2 job = aeSystem.makeCraftingJob(new ItemStack(Blocks.chest, 1));
-        simulateJobAndCheck(job, SIMPLE_SIMULATION_TIMEOUT_MS);
+        simulateJobAndCheck(job, MAX_SIMULATION_STEPS);
         assertFalse(job.isSimulation());
         assertEquals(job.getOutput(), AEItemStack.create(new ItemStack(Blocks.chest, 1)));
         assertJobPlanEquals(
@@ -279,7 +280,7 @@ public class CraftingV2Tests {
         // Another pattern that shouldn't match
         addDummyGappleRecipe(aeSystem);
         final CraftingJobV2 job = aeSystem.makeCraftingJob(new ItemStack(Blocks.chest, 1));
-        simulateJobAndCheck(job, SIMPLE_SIMULATION_TIMEOUT_MS);
+        simulateJobAndCheck(job, MAX_SIMULATION_STEPS);
         assertFalse(job.isSimulation());
         assertEquals(job.getOutput(), AEItemStack.create(new ItemStack(Blocks.chest, 1)));
         assertJobPlanEquals(
@@ -302,7 +303,7 @@ public class CraftingV2Tests {
         // Another pattern that shouldn't match
         addDummyGappleRecipe(aeSystem);
         final CraftingJobV2 job = aeSystem.makeCraftingJob(new ItemStack(Items.bed, 1));
-        simulateJobAndCheck(job, SIMPLE_SIMULATION_TIMEOUT_MS);
+        simulateJobAndCheck(job, MAX_SIMULATION_STEPS);
         assertFalse(job.isSimulation());
         assertEquals(job.getOutput(), AEItemStack.create(new ItemStack(Items.bed, 1)));
         assertJobPlanEquals(
@@ -324,7 +325,7 @@ public class CraftingV2Tests {
         // Another pattern that shouldn't match
         addDummyGappleRecipe(aeSystem);
         final CraftingJobV2 job = aeSystem.makeCraftingJob(new ItemStack(Blocks.chest, 4));
-        simulateJobAndCheck(job, SIMPLE_SIMULATION_TIMEOUT_MS);
+        simulateJobAndCheck(job, MAX_SIMULATION_STEPS);
         assertFalse(job.isSimulation());
         assertEquals(job.getOutput(), AEItemStack.create(new ItemStack(Blocks.chest, 4)));
         assertJobPlanEquals(
@@ -345,7 +346,7 @@ public class CraftingV2Tests {
         // Another pattern that shouldn't match
         addDummyGappleRecipe(aeSystem);
         final CraftingJobV2 job = aeSystem.makeCraftingJob(new ItemStack(Blocks.chest, 4));
-        simulateJobAndCheck(job, SIMPLE_SIMULATION_TIMEOUT_MS);
+        simulateJobAndCheck(job, MAX_SIMULATION_STEPS);
         assertTrue(job.isSimulation());
         assertEquals(job.getOutput(), AEItemStack.create(new ItemStack(Blocks.chest, 4)));
         assertJobPlanEquals(
@@ -365,7 +366,7 @@ public class CraftingV2Tests {
                 .addOutput(new ItemStack(Blocks.log, 1)).buildAndAdd();
         for (int plankAmount = 1; plankAmount < 64; plankAmount++) {
             final CraftingJobV2 job = aeSystem.makeCraftingJob(new ItemStack(Blocks.planks, plankAmount));
-            simulateJobAndCheck(job, SIMPLE_SIMULATION_TIMEOUT_MS);
+            simulateJobAndCheck(job, MAX_SIMULATION_STEPS);
             assertEquals(job.isSimulation(), plankAmount > 16);
         }
     }
@@ -378,7 +379,7 @@ public class CraftingV2Tests {
                 .addOutput(new ItemStack(Blocks.planks, 4)).allowBeingASubstitute().buildAndAdd();
 
         final CraftingJobV2 job = aeSystem.makeCraftingJob(new ItemStack(Blocks.planks, 1));
-        simulateJobAndCheck(job, SIMPLE_SIMULATION_TIMEOUT_MS);
+        simulateJobAndCheck(job, MAX_SIMULATION_STEPS);
         assertEquals(true, job.isSimulation()); // Don't use renamed items
     }
 
@@ -442,7 +443,7 @@ public class CraftingV2Tests {
         addHammerBronzePlateRecipe(aeSystem);
 
         final CraftingJobV2 job = aeSystem.makeCraftingJob(bronzePlate);
-        simulateJobAndCheck(job, SIMPLE_SIMULATION_TIMEOUT_MS);
+        simulateJobAndCheck(job, MAX_SIMULATION_STEPS);
         assertEquals(false, job.isSimulation());
         assertJobPlanEquals(
                 job,
@@ -459,7 +460,7 @@ public class CraftingV2Tests {
         addHammerBronzePlateRecipe(aeSystem);
 
         final CraftingJobV2 job = aeSystem.makeCraftingJob(withSize(bronzePlate.copy(), 2));
-        simulateJobAndCheck(job, SIMPLE_SIMULATION_TIMEOUT_MS);
+        simulateJobAndCheck(job, MAX_SIMULATION_STEPS);
         assertEquals(false, job.isSimulation());
         assertJobPlanEquals(
                 job,
@@ -481,7 +482,7 @@ public class CraftingV2Tests {
         addMixedMetalRecipe(aeSystem);
 
         final CraftingJobV2 job = aeSystem.makeCraftingJob(withSize(getMixedMetalIngot(), 100));
-        simulateJobAndCheck(job, SIMPLE_SIMULATION_TIMEOUT_MS);
+        simulateJobAndCheck(job, MAX_SIMULATION_STEPS);
         assertEquals(false, job.isSimulation());
         assertJobPlanEquals(
                 job,
@@ -504,7 +505,7 @@ public class CraftingV2Tests {
         addHammerBronzeDoublePlateRecipe(aeSystem);
 
         final CraftingJobV2 job = aeSystem.makeCraftingJob(bronzeDoublePlate);
-        simulateJobAndCheck(job, SIMPLE_SIMULATION_TIMEOUT_MS);
+        simulateJobAndCheck(job, MAX_SIMULATION_STEPS);
         assertEquals(false, job.isSimulation());
         assertJobPlanEquals(
                 job,
@@ -522,7 +523,7 @@ public class CraftingV2Tests {
         addHammerBronzePlateRecipe(aeSystem);
 
         final CraftingJobV2 job = aeSystem.makeCraftingJob(withSize(bronzePlate.copy(), 2));
-        simulateJobAndCheck(job, SIMPLE_SIMULATION_TIMEOUT_MS);
+        simulateJobAndCheck(job, MAX_SIMULATION_STEPS);
         assertEquals(true, job.isSimulation());
         assertJobPlanEquals(
                 job,
@@ -539,7 +540,7 @@ public class CraftingV2Tests {
                 .buildAndAdd();
 
         final CraftingJobV2 job = aeSystem.makeCraftingJob(withSize(bronzeDoublePlate.copy(), 1));
-        simulateJobAndCheck(job, SIMPLE_SIMULATION_TIMEOUT_MS);
+        simulateJobAndCheck(job, MAX_SIMULATION_STEPS);
         assertEquals(true, job.isSimulation());
         assertJobPlanEquals(
                 job,
@@ -556,7 +557,7 @@ public class CraftingV2Tests {
                 .addOutput(new ItemStack(Blocks.gold_block)).buildAndAdd();
 
         final CraftingJobV2 job = aeSystem.makeCraftingJob(new ItemStack(Blocks.gold_block, 100));
-        simulateJobAndCheck(job, SIMPLE_SIMULATION_TIMEOUT_MS);
+        simulateJobAndCheck(job, MAX_SIMULATION_STEPS);
         assertEquals(true, job.isSimulation());
         assertJobPlanEquals(
                 job,
@@ -586,7 +587,7 @@ public class CraftingV2Tests {
                 .buildAndAdd();
 
         final CraftingJobV2 job = aeSystem.makeCraftingJob(new ItemStack(Blocks.gold_block, 100));
-        simulateJobAndCheck(job, SIMPLE_SIMULATION_TIMEOUT_MS);
+        simulateJobAndCheck(job, MAX_SIMULATION_STEPS);
         assertEquals(true, job.isSimulation());
         assertJobPlanEquals(
                 job,
@@ -615,7 +616,7 @@ public class CraftingV2Tests {
                 .buildAndAdd();
 
         final CraftingJobV2 job = aeSystem.makeCraftingJob(withSize(ironPlate, 3));
-        simulateJobAndCheck(job, SIMPLE_SIMULATION_TIMEOUT_MS);
+        simulateJobAndCheck(job, MAX_SIMULATION_STEPS);
         assertFalse(job.isSimulation());
         assertEquals(job.getOutput(), AEItemStack.create(withSize(ironPlate, 3)));
         assertJobPlanEquals(
@@ -626,7 +627,7 @@ public class CraftingV2Tests {
                 AEItemStack.create(withSize(ironPlate, 0)).setCountRequestable(3));
 
         final CraftingJobV2 jobFailed = aeSystem.makeCraftingJob(withSize(ironPlate, 4));
-        simulateJobAndCheck(jobFailed, SIMPLE_SIMULATION_TIMEOUT_MS);
+        simulateJobAndCheck(jobFailed, MAX_SIMULATION_STEPS);
         assertTrue(jobFailed.isSimulation());
         assertJobPlanEquals(
                 jobFailed,
@@ -656,7 +657,7 @@ public class CraftingV2Tests {
                 .buildAndAdd();
 
         final CraftingJobV2 job = aeSystem.makeCraftingJob(withSize(ironPlate, 3));
-        simulateJobAndCheck(job, SIMPLE_SIMULATION_TIMEOUT_MS);
+        simulateJobAndCheck(job, MAX_SIMULATION_STEPS);
         assertFalse(job.isSimulation());
         assertEquals(job.getOutput(), AEItemStack.create(withSize(ironPlate, 3)));
         assertJobPlanEquals(
@@ -668,7 +669,7 @@ public class CraftingV2Tests {
                 AEItemStack.create(withSize(ironPlate, 0)).setCountRequestable(3));
 
         final CraftingJobV2 jobFailed = aeSystem.makeCraftingJob(withSize(ironPlate, 4));
-        simulateJobAndCheck(jobFailed, SIMPLE_SIMULATION_TIMEOUT_MS);
+        simulateJobAndCheck(jobFailed, MAX_SIMULATION_STEPS);
         assertTrue(jobFailed.isSimulation());
         assertJobPlanEquals(
                 jobFailed,
@@ -699,7 +700,7 @@ public class CraftingV2Tests {
                 .buildAndAdd();
 
         final CraftingJobV2 job = aeSystem.makeCraftingJob(withSize(ironPlate, 3));
-        simulateJobAndCheck(job, SIMPLE_SIMULATION_TIMEOUT_MS);
+        simulateJobAndCheck(job, MAX_SIMULATION_STEPS);
         assertFalse(job.isSimulation());
 
         final List<CraftingRequest> goldIngotRequests = getMatchingRequests(job, withSize(goldIngot.copy(), 1));
@@ -711,5 +712,100 @@ public class CraftingV2Tests {
         assertEquals(1, goldDustRequests.size());
         assertEquals(1, goldDustRequests.get(0).stack.getStackSize());
         assertEquals(0, goldDustRequests.get(0).remainingToProcess);
+    }
+
+    private void addEqualPriorityPlateRecipes(MockAESystem aeSystem) {
+        aeSystem.newProcessingPattern().addInput(withSize(ironDust, 2)) //
+                .addOutput(withSize(ironIngot, 1)) //
+                .buildAndAdd();
+        aeSystem.newProcessingPattern().addInput(withSize(ironIngot, 1)) //
+                .addOutput(withSize(ironPlate, 1)) //
+                .buildAndAdd();
+        aeSystem.newProcessingPattern().addInput(withSize(goldDust, 1)) //
+                .addOutput(withSize(ironPlate, 1)) //
+                .buildAndAdd();
+    }
+
+    @Test
+    void competingRecipeSamePriority() {
+        MockAESystem aeSystem = new MockAESystem(dummyWorld);
+        aeSystem.addStoredItem(withSize(ironDust, 4));
+        aeSystem.addStoredItem(withSize(goldDust, 1));
+        addEqualPriorityPlateRecipes(aeSystem);
+
+        final CraftingJobV2 job = aeSystem.makeCraftingJob(withSize(ironPlate, 3));
+        simulateJobAndCheck(job, MAX_SIMULATION_STEPS);
+        assertFalse(job.isSimulation());
+        assertEquals(job.getOutput(), AEItemStack.create(withSize(ironPlate, 3)));
+        assertJobPlanEquals(
+                job,
+                AEItemStack.create(withSize(ironDust, 4)),
+                AEItemStack.create(withSize(goldDust, 1)),
+                AEItemStack.create(withSize(ironIngot, 0)).setCountRequestable(2),
+                AEItemStack.create(withSize(ironPlate, 0)).setCountRequestable(3));
+
+        final CraftingJobV2 jobFailed = aeSystem.makeCraftingJob(withSize(ironPlate, 4));
+        simulateJobAndCheck(jobFailed, MAX_SIMULATION_STEPS);
+        assertTrue(jobFailed.isSimulation());
+        assertJobPlanEquals(
+                jobFailed,
+                AEItemStack.create(withSize(ironDust, 6)),
+                AEItemStack.create(withSize(goldDust, 1)),
+                AEItemStack.create(withSize(ironIngot, 0)).setCountRequestable(3),
+                AEItemStack.create(withSize(ironPlate, 0)).setCountRequestable(4));
+    }
+
+    @Test
+    void competingRecipeSamePriorityIronDustOnly() {
+        MockAESystem aeSystem = new MockAESystem(dummyWorld);
+        aeSystem.addStoredItem(withSize(ironDust, 2));
+        addEqualPriorityPlateRecipes(aeSystem);
+
+        final CraftingJobV2 job = aeSystem.makeCraftingJob(withSize(ironPlate, 1));
+        simulateJobAndCheck(job, MAX_SIMULATION_STEPS);
+        assertFalse(job.isSimulation());
+        assertJobPlanEquals(
+                job,
+                AEItemStack.create(withSize(ironDust, 2)),
+                AEItemStack.create(withSize(ironIngot, 0)).setCountRequestable(1),
+                AEItemStack.create(withSize(ironPlate, 0)).setCountRequestable(1));
+    }
+
+    @Test
+    void competingRecipeSamePriorityGoldDustOnly() {
+        MockAESystem aeSystem = new MockAESystem(dummyWorld);
+        aeSystem.addStoredItem(withSize(goldDust, 1));
+        addEqualPriorityPlateRecipes(aeSystem);
+
+        final CraftingJobV2 job = aeSystem.makeCraftingJob(withSize(ironPlate, 1));
+        simulateJobAndCheck(job, MAX_SIMULATION_STEPS);
+        assertFalse(job.isSimulation());
+        assertJobPlanEquals(
+                job,
+                AEItemStack.create(withSize(goldDust, 1)),
+                AEItemStack.create(withSize(ironPlate, 0)).setCountRequestable(1));
+    }
+
+    @Test
+    void competingRecipePatternsListedByPriority() {
+        MockAESystem aeSystem = new MockAESystem(dummyWorld);
+        addEqualPriorityPlateRecipes(aeSystem);
+        aeSystem.newProcessingPattern().addInput(withSize(goldIngot, 1)) //
+                .addOutput(withSize(ironPlate, 1)) //
+                .setPriority(1) //
+                .buildAndAdd();
+        aeSystem.newProcessingPattern().addInput(withSize(ironDust, 1)) //
+                .addOutput(withSize(ironPlate, 1)) //
+                .setPriority(-1) //
+                .buildAndAdd();
+        aeSystem.cgCache.setMockPatternsFromMethods();
+
+        final List<ICraftingPatternDetails> platePatterns = new ArrayList<>(
+                aeSystem.cgCache.getCraftingFor(AEItemStack.create(withSize(ironPlate, 1)), null, 0, dummyWorld));
+        assertEquals(4, platePatterns.size());
+        assertEquals(1, platePatterns.get(0).getPriority());
+        assertEquals(0, platePatterns.get(1).getPriority());
+        assertEquals(0, platePatterns.get(2).getPriority());
+        assertEquals(-1, platePatterns.get(3).getPriority());
     }
 }

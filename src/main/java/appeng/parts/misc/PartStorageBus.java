@@ -142,6 +142,7 @@ public class PartStorageBus extends PartUpgradeable implements IStorageBus, INBT
     public PartStorageBus(final ItemStack is) {
         super(is);
         this.getConfigManager().registerSetting(Settings.ACCESS, AccessRestriction.READ_WRITE);
+        this.getConfigManager().registerSetting(Settings.RESHUFFLE_ACCESS, AccessRestriction.READ_WRITE);
         this.getConfigManager().registerSetting(Settings.EXTRACTION_MODE, ExtractionMode.LOOSE);
         this.getConfigManager().registerSetting(Settings.FUZZY_MODE, FuzzyMode.IGNORE_ALL);
         this.getConfigManager().registerSetting(Settings.STORAGE_FILTER, StorageFilter.EXTRACTABLE_ONLY);
@@ -671,7 +672,7 @@ public class PartStorageBus extends PartUpgradeable implements IStorageBus, INBT
                 if (inv != null) {
                     this.checkInterfaceVsStorageBus(target, this.getSide().getOpposite());
 
-                    this.handler = new StorageBusInventoryHandler<>(inv, this.getStackType());
+                    this.handler = new StorageBusInventoryHandler<>(inv, this.getStackType(), this::getReshuffleAccess);
 
                     AccessRestriction currentAccess = (AccessRestriction) this.getConfigManager()
                             .getSetting(Settings.ACCESS);
@@ -791,6 +792,10 @@ public class PartStorageBus extends PartUpgradeable implements IStorageBus, INBT
         }
 
         return Collections.emptyList();
+    }
+
+    public AccessRestriction getReshuffleAccess() {
+        return (AccessRestriction) this.getConfigManager().getSetting(Settings.RESHUFFLE_ACCESS);
     }
 
     @Override
