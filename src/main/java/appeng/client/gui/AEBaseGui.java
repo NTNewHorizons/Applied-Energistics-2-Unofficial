@@ -148,7 +148,6 @@ public abstract class AEBaseGui extends GuiContainer implements IGuiTooltipHandl
     }
 
     private static boolean switchingGuis;
-    private static boolean preserveCarriedStackOnClose;
     // drag y
     protected final Set<Slot> draggedSlots = new HashSet<>();
     public static final AppEngRenderItem aeRenderItem = new AppEngRenderItem();
@@ -730,11 +729,8 @@ public abstract class AEBaseGui extends GuiContainer implements IGuiTooltipHandl
     @Override
     public void onGuiClosed() {
         this.flushPendingSync();
-        if (preserveCarriedStackOnClose) {
-            preserveCarriedStackOnClose = false;
-        } else {
-            super.onGuiClosed();
-        }
+        switchingGuis = false;
+        super.onGuiClosed();
         this.subGui = true; // in case the gui is reopened later ( i'm looking at you NEI )
         aeRenderItem.parent = null;
     }
@@ -1043,9 +1039,6 @@ public abstract class AEBaseGui extends GuiContainer implements IGuiTooltipHandl
 
     public static final synchronized void setSwitchingGuis(final boolean switchingGuis) {
         AEBaseGui.switchingGuis = switchingGuis;
-        if (switchingGuis) {
-            preserveCarriedStackOnClose = true;
-        }
     }
 
     protected void addItemTooltip(ItemStack is, List<String> lineList) {
