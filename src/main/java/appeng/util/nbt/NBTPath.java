@@ -10,18 +10,8 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 
 /**
- * A precompiled, dot-separated path through compound keys and list indices. Bare numbers select list indices. Double
- * quotes select literal keys. Inside quotes, use {@code \"} for quotes and {@code \\} for backslashes.
- * <p>
- * Examples (equivalent access in brackets):
- * <ul>
- * <li>{@code stats.damage} → {@code root["stats"]["damage"]}</li>
- * <li>{@code inventory.0.count} → {@code root["inventory"][0]["count"]}</li>
- * <li>{@code "stats.damage"} → {@code root["stats.damage"]}</li>
- * <li>{@code stats."0"} → {@code root["stats"]["0"]}</li>
- * <li>{@code inventory.0."slot.name"} → {@code root["inventory"][0]["slot.name"]}</li>
- * <li>{@code "a\\b"} → key {@code a\b} (one backslash)</li>
- * </ul>
+ * A precompiled path using Minecraft-style NBT path syntax: dot-separated compound keys, bracketed list indices,
+ * and double-quoted literal keys with escaped quotes and backslashes. Numeric compound keys must be quoted.
  */
 public final class NBTPath {
 
@@ -59,18 +49,26 @@ public final class NBTPath {
                 elements.add(new CompoundKey(key.toString()));
             } else {
                 final int start = position;
-                while (position < source.length() && source.charAt(position) != '.') position++;
+                while (position < source.length() && source.charAt(position) != '.'
+                        && source.charAt(position) != '['
+                        && source.charAt(position) != ']')
+                    position++;
                 if (position == start) return null;
                 final String token = source.substring(start, position);
-                if (isUnsignedInteger(token)) {
-                    try {
-                        elements.add(new ListIndex(Integer.parseInt(token)));
-                    } catch (final NumberFormatException ignored) {
-                        return null;
-                    }
-                } else {
-                    elements.add(new CompoundKey(token));
+                if (isUnsignedInteger(token)) return null;
+                elements.add(new CompoundKey(token));
+            }
+            while (position < source.length() && source.charAt(position) == '[') {
+                final int start = ++position;
+                while (position < source.length() && source.charAt(position) >= '0' && source.charAt(position) <= '9')
+                    position++;
+                if (position == start || position == source.length() || source.charAt(position) != ']') return null;
+                try {
+                    elements.add(new ListIndex(Integer.parseInt(source.substring(start, position))));
+                } catch (final NumberFormatException ignored) {
+                    return null;
                 }
+                position++;
             }
             if (position == source.length()) break;
             if (source.charAt(position++) != '.' || position == source.length()) return null;
@@ -83,9 +81,15 @@ public final class NBTPath {
         return parentPath.isEmpty() ? encodedKey : parentPath + '.' + encodedKey;
     }
 
+    static String appendListIndex(final String parentPath, final int index) {
+        return parentPath + '[' + index + ']';
+    }
+
     private static String encodeCompoundKey(final String key) {
         if (!key.trim().isEmpty() && !isUnsignedInteger(key)
                 && key.indexOf('.') < 0
+                && key.indexOf('[') < 0
+                && key.indexOf(']') < 0
                 && key.indexOf('"') < 0
                 && key.indexOf('\\') < 0)
             return key;

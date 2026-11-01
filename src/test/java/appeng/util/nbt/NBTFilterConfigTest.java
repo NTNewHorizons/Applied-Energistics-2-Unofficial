@@ -22,8 +22,9 @@ public class NBTFilterConfigTest {
         enchantments.appendTag(enchantment);
         root.setTag("ench", enchantments);
 
-        final NBTFilterConfig config = config("ench.0.lvl", NBTComparison.GREATER_THAN_OR_EQUAL, "5");
+        final NBTFilterConfig config = config("ench[0].lvl", NBTComparison.GREATER_THAN_OR_EQUAL, "5");
         assertTrue(config.matches(root));
+        assertFalse(config("ench.0.lvl", NBTComparison.NOT_EXISTS, "").matches(root));
         root.setTag("ench", new NBTTagList());
         assertFalse(config.matches(root));
     }
@@ -109,6 +110,8 @@ public class NBTFilterConfigTest {
 
         assertEquals(NBTFilterMode.ALL, config.getMode());
         assertEquals(4, config.getFilters().size());
+        assertEquals("names[0]", config.getFilters().get(0).getPath());
+        assertEquals("names[1]", config.getFilters().get(1).getPath());
         assertTrue(config.matches(root));
 
         stats.setLong("energy", 9_007_199_254_740_992L);
@@ -123,7 +126,8 @@ public class NBTFilterConfigTest {
 
     @Test
     public void copyNbtPreservesLiteralKeysInsideCompoundsAndLists() {
-        final String[] keys = { "", " ", "0", "001", "2147483648", "a.b", "a\\b", "a\"b", "a.\\\"b", "ordinary" };
+        final String[] keys = { "", " ", "0", "001", "2147483648", "a.b", "a\\b", "a\"b", "a.\\\"b", "a[0]", "a]b",
+                "ordinary" };
         final NBTTagCompound nested = new NBTTagCompound();
         for (final String key : keys) nested.setInteger(key, 7);
         final NBTTagList list = new NBTTagList();
@@ -135,7 +139,7 @@ public class NBTFilterConfigTest {
         root.setTag("empty.list", new NBTTagList());
 
         final NBTFilterConfig generated = new NBTFilterConfig();
-        generated.replaceWithNBT(root, 25);
+        generated.replaceWithNBT(root, 32);
         assertEquals(keys.length * 2 + 2, generated.getFilters().size());
         assertTrue(generated.matches(root));
 
@@ -151,5 +155,26 @@ public class NBTFilterConfigTest {
                 compound.setInteger(key, 7);
             }
         }
+    }
+
+    @Test
+    public void copyNbtGeneratesConsecutiveListIndices() {
+        final NBTTagList inner = new NBTTagList();
+        inner.appendTag(new NBTTagInt(3));
+        inner.appendTag(new NBTTagInt(7));
+        final NBTTagList outer = new NBTTagList();
+        outer.appendTag(inner);
+        final NBTTagCompound root = new NBTTagCompound();
+        root.setTag("items", outer);
+        final NBTFilterConfig config = new NBTFilterConfig();
+
+        config.replaceWithNBT(root, 25);
+
+        assertEquals(2, config.getFilters().size());
+        assertEquals("items[0][0]", config.getFilters().get(0).getPath());
+        assertEquals("items[0][1]", config.getFilters().get(1).getPath());
+        assertTrue(config.matches(root));
+        inner.tagList.set(1, new NBTTagInt(8));
+        assertFalse(config.matches(root));
     }
 }

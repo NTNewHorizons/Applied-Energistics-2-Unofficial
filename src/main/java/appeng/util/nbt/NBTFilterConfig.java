@@ -118,7 +118,11 @@ public final class NBTFilterConfig {
                 this.addGeneratedFilter(root, tag, path, NBTComparison.EXISTS, "");
             } else {
                 for (int i = 0; i < list.tagCount() && this.filters.size() < maxFilters; i++) {
-                    this.addFiltersFromTag(root, (NBTBase) list.tagList.get(i), path + '.' + i, maxFilters);
+                    this.addFiltersFromTag(
+                            root,
+                            (NBTBase) list.tagList.get(i),
+                            NBTPath.appendListIndex(path, i),
+                            maxFilters);
                 }
             }
             return;
