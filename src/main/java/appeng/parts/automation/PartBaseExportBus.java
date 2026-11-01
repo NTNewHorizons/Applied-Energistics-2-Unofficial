@@ -95,42 +95,23 @@ public abstract class PartBaseExportBus<StackType extends IAEStack<StackType>> e
 
             final boolean hasFilterCard = this.getInstalledUpgrades(Upgrades.ORE_FILTER) > 0
                     || this.getInstalledUpgrades(Upgrades.NBT_FILTER) > 0;
-            if (!hasFilterCard || this.craftOnly()) {
-                int x;
+            if (hasFilterCard && !this.craftOnly() && supportOreDict()) {
+                doOreDict(energy, gridInv);
+            }
 
-                for (x = 0; x < this.availableSlots() && this.itemToSend > 0; x++) {
-                    final int slotToExport = this.getStartingSlot(schedulingMode, x);
+            int x;
 
-                    final StackType aes = (StackType) this.getAEInventoryByName(StorageName.CONFIG)
-                            .getAEStackInSlot(slotToExport);
+            for (x = 0; x < this.availableSlots() && this.itemToSend > 0; x++) {
+                final int slotToExport = this.getStartingSlot(schedulingMode, x);
 
-                    if (hasFilterCard
-                            && (!(aes instanceof IAEItemStack item) || !this.createItemFilter().isListed(item)))
-                        continue;
+                final StackType aes = (StackType) this.getAEInventoryByName(StorageName.CONFIG)
+                        .getAEStackInSlot(slotToExport);
 
-                    if (aes == null || this.itemToSend <= 0 || this.craftOnly()) {
-                        if (this.isCraftingEnabled() && this.canInjectStackToTarget(aes)) {
-                            this.didSomething = this.craftingTracker.handleCrafting(
-                                    slotToExport,
-                                    this.itemToSend,
-                                    aes,
-                                    this.getTile().getWorldObj(),
-                                    this.getProxy().getGrid(),
-                                    cg,
-                                    this.mySrc) || this.didSomething;
-                        }
-                        continue;
-                    }
+                if (hasFilterCard && (!(aes instanceof IAEItemStack item) || !this.createItemFilter().isListed(item)))
+                    continue;
 
-                    final long before = this.itemToSend;
-
-                    if (supportFuzzy() && this.getInstalledUpgrades(Upgrades.FUZZY) > 0) {
-                        doFuzzy(aes, fuzzyMode, energy, gridInv);
-                    } else {
-                        this.pushItemIntoTarget(energy, gridInv, aes);
-                    }
-
-                    if (this.itemToSend == before && this.isCraftingEnabled() && this.canInjectStackToTarget(aes)) {
+                if (aes == null || this.itemToSend <= 0 || this.craftOnly()) {
+                    if (this.isCraftingEnabled() && this.canInjectStackToTarget(aes)) {
                         this.didSomething = this.craftingTracker.handleCrafting(
                                 slotToExport,
                                 this.itemToSend,
@@ -140,12 +121,32 @@ public abstract class PartBaseExportBus<StackType extends IAEStack<StackType>> e
                                 cg,
                                 this.mySrc) || this.didSomething;
                     }
+                    continue;
                 }
 
-                this.updateSchedulingMode(schedulingMode, x);
-            } else if (supportOreDict()) {
-                doOreDict(energy, gridInv);
+                final long before = this.itemToSend;
+
+                if (!hasFilterCard) {
+                    if (supportFuzzy() && this.getInstalledUpgrades(Upgrades.FUZZY) > 0) {
+                        doFuzzy(aes, fuzzyMode, energy, gridInv);
+                    } else {
+                        this.pushItemIntoTarget(energy, gridInv, aes);
+                    }
+                }
+
+                if (this.itemToSend == before && this.isCraftingEnabled() && this.canInjectStackToTarget(aes)) {
+                    this.didSomething = this.craftingTracker.handleCrafting(
+                            slotToExport,
+                            this.itemToSend,
+                            aes,
+                            this.getTile().getWorldObj(),
+                            this.getProxy().getGrid(),
+                            cg,
+                            this.mySrc) || this.didSomething;
+                }
             }
+
+            this.updateSchedulingMode(schedulingMode, x);
         } catch (final GridAccessException e) {
             // :P
         }
