@@ -83,6 +83,9 @@ public abstract class PartSharedItemBus<StackType extends IAEStack<StackType>> e
         if (getInstalledUpgrades(Upgrades.ORE_FILTER) == 0) {
             oreFilterString = "";
         }
+        if (getInstalledUpgrades(Upgrades.NBT_FILTER) == 0) {
+            this.nbtFilterConfig.replaceWith(null);
+        }
         this.updateState();
     }
 
