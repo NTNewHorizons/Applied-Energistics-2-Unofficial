@@ -10,8 +10,8 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 
 /**
- * A precompiled path using Minecraft-style NBT path syntax: dot-separated compound keys, bracketed list indices,
- * and double-quoted literal keys with escaped quotes and backslashes. Numeric compound keys must be quoted.
+ * A precompiled path using Minecraft-style NBT path syntax: dot-separated compound keys, bracketed list indices, and
+ * double-quoted literal keys with escaped quotes and backslashes. Numeric compound keys must be quoted.
  */
 public final class NBTPath {
 
