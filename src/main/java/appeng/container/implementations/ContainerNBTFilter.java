@@ -6,6 +6,7 @@ import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.item.ItemStack;
 
 import appeng.api.config.Upgrades;
+import appeng.api.implementations.IUpgradeableHost;
 import appeng.api.implementations.tiles.ICellWorkbench;
 import appeng.container.ContainerSubGui;
 import appeng.core.sync.network.NetworkHandler;
@@ -67,10 +68,11 @@ public class ContainerNBTFilter extends ContainerSubGui {
     }
 
     private boolean isFilterHostValid() {
+        if (this.filterHost instanceof IUpgradeableHost host && host.getInstalledUpgrades(Upgrades.NBT_FILTER) <= 0)
+            return false;
         if (!(this.filterHost instanceof ICellWorkbench workbench)) return true;
         return workbench.isSame(workbench) && this.editingCell != null
-                && workbench.getInventoryByName("cell").getStackInSlot(0) == this.editingCell
-                && workbench.getInstalledUpgrades(Upgrades.NBT_FILTER) > 0;
+                && workbench.getInventoryByName("cell").getStackInSlot(0) == this.editingCell;
     }
 
 }
