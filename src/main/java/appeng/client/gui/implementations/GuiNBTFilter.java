@@ -23,7 +23,6 @@ import cpw.mods.fml.client.config.GuiButtonExt;
 
 public class GuiNBTFilter extends GuiSub {
 
-    private static final int MAX_VISIBLE_FILTERS = 25;
     private static final int BACKGROUND_COLOR = 0xFFC6C6C6;
 
     private static final int ROW_TOP = 28;
@@ -79,7 +78,7 @@ public class GuiNBTFilter extends GuiSub {
                 config.getMode().name());
         this.buttonList.add(this.modeButton);
 
-        final int visibleRows = Math.min(config.getFilters().size(), MAX_VISIBLE_FILTERS);
+        final int visibleRows = Math.min(config.getFilters().size(), NBTFilterConfig.MAX_FILTERS);
         for (int i = 0; i < visibleRows; i++) this.addRowControls(i, config.getFilters().get(i));
 
         final int footerY = this.guiTop + ROW_TOP + visibleRows * ROW_HEIGHT;
@@ -95,14 +94,15 @@ public class GuiNBTFilter extends GuiSub {
                 buttonWidth,
                 20,
                 "Add Filter");
-        this.addButton.enabled = config.getFilters().size() < MAX_VISIBLE_FILTERS;
+        this.addButton.enabled = config.getFilters().size() < NBTFilterConfig.MAX_FILTERS;
         this.buttonList.add(this.addButton);
         this.observedRevision = this.containerNBTFilter.getRevision();
         this.controlsDirty = false;
     }
 
     private void updateGuiGeometry() {
-        final int visibleRows = Math.min(this.containerNBTFilter.getConfig().getFilters().size(), MAX_VISIBLE_FILTERS);
+        final int visibleRows = Math
+                .min(this.containerNBTFilter.getConfig().getFilters().size(), NBTFilterConfig.MAX_FILTERS);
         this.ySize = ROW_TOP + visibleRows * ROW_HEIGHT + FOOTER_HEIGHT;
         this.guiLeft = (this.width - this.xSize) / 2;
         this.guiTop = (this.height - this.ySize) / 2;
@@ -245,7 +245,7 @@ public class GuiNBTFilter extends GuiSub {
             return false;
         }
 
-        this.containerNBTFilter.getConfig().replaceWithNBT(sourceItem.getTagCompound(), MAX_VISIBLE_FILTERS);
+        this.containerNBTFilter.getConfig().replaceWithNBT(sourceItem.getTagCompound(), NBTFilterConfig.MAX_FILTERS);
         this.copyNBTButton.enabled = false;
         this.controlsDirty = true;
         this.configurationChanged();

@@ -156,8 +156,7 @@ public class NBTFilterConfigTest {
 
     @Test
     public void copyNbtPreservesLiteralKeysInsideCompoundsAndLists() {
-        final String[] keys = { "", " ", "0", "001", "2147483648", "a.b", "a\\b", "a\"b", "a.\\\"b", "a[0]", "a]b",
-                "ordinary" };
+        final String[] keys = { "", " ", "0", "001", "2147483648", "a.b", "a\\b", "a\"b", "a.\\\"b", "a[0]", "a]b" };
         final NBTTagCompound nested = new NBTTagCompound();
         for (final String key : keys) nested.setInteger(key, 7);
         final NBTTagList list = new NBTTagList();
@@ -169,7 +168,7 @@ public class NBTFilterConfigTest {
         root.setTag("empty.list", new NBTTagList());
 
         final NBTFilterConfig generated = new NBTFilterConfig();
-        generated.replaceWithNBT(root, 32);
+        generated.replaceWithNBT(root, NBTFilterConfig.MAX_FILTERS);
         assertEquals(keys.length * 2 + 2, generated.getFilters().size());
         assertTrue(generated.matches(root));
 
@@ -206,5 +205,48 @@ public class NBTFilterConfigTest {
         assertTrue(config.matches(root));
         inner.tagList.set(1, new NBTTagInt(8));
         assertFalse(config.matches(root));
+    }
+
+    @Test
+    public void loadingOversizedConfigDiscardsRulesBeyondTheVisibleLimit() {
+        final NBTTagList rules = new NBTTagList();
+        for (int i = 0; i < NBTFilterConfig.MAX_FILTERS; i++) {
+            rules.appendTag(new NBTFilterEntry("visible", NBTComparison.EXISTS, "").writeToNBT());
+        }
+        rules.appendTag(new NBTFilterEntry("hidden", NBTComparison.EXISTS, "").writeToNBT());
+        final NBTTagCompound saved = new NBTTagCompound();
+        saved.setString("Mode", NBTFilterMode.ALL.name());
+        saved.setTag("Filters", rules);
+        final NBTFilterConfig config = new NBTFilterConfig();
+
+        config.readFromNBT(saved);
+
+        assertEquals(NBTFilterConfig.MAX_FILTERS, config.getFilters().size());
+        final NBTTagCompound candidate = new NBTTagCompound();
+        candidate.setInteger("visible", 1);
+        assertTrue(config.matches(candidate));
+        final NBTTagCompound rewritten = new NBTTagCompound();
+        config.writeToNBT(rewritten);
+        assertEquals(
+                NBTFilterConfig.MAX_FILTERS,
+                rewritten.getCompoundTag(NBTFilterConfig.NBT_KEY).getTagList("Filters", 10).tagCount());
+    }
+
+    @Test
+    public void addingRulesAndCopyNbtRespectTheSharedLimit() {
+        final NBTFilterConfig config = new NBTFilterConfig();
+        final NBTTagCompound root = new NBTTagCompound();
+        for (int i = 0; i < NBTFilterConfig.MAX_FILTERS + 7; i++) {
+            config.addFilter(new NBTFilterEntry("key" + i, NBTComparison.EXISTS, ""));
+            root.setInteger("key" + i, i);
+        }
+        assertEquals(NBTFilterConfig.MAX_FILTERS, config.getFilters().size());
+
+        config.replaceWithNBT(root, Integer.MAX_VALUE);
+        assertEquals(NBTFilterConfig.MAX_FILTERS, config.getFilters().size());
+        assertTrue(config.matches(root));
+
+        config.replaceWithNBT(root, 2);
+        assertEquals(2, config.getFilters().size());
     }
 }

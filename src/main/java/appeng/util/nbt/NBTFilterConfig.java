@@ -15,6 +15,7 @@ import net.minecraftforge.common.util.Constants.NBT;
 public final class NBTFilterConfig {
 
     public static final String NBT_KEY = "NBTFilter";
+    public static final int MAX_FILTERS = 25;
     private static final String MODE_KEY = "Mode";
     private static final String FILTERS_KEY = "Filters";
 
@@ -58,6 +59,7 @@ public final class NBTFilterConfig {
     }
 
     public void addFilter(final NBTFilterEntry entry) {
+        if (this.filters.size() >= MAX_FILTERS) return;
         this.filters.add(entry == null ? new NBTFilterEntry() : entry);
         this.rebuildCompiledFilters();
     }
@@ -85,7 +87,8 @@ public final class NBTFilterConfig {
     public void replaceWithNBT(final NBTTagCompound root, final int maxFilters) {
         this.filters.clear();
         this.mode = NBTFilterMode.ALL;
-        if (root != null && maxFilters > 0) this.addFiltersFromCompound(root, root, "", maxFilters);
+        if (root != null && maxFilters > 0)
+            this.addFiltersFromCompound(root, root, "", Math.min(maxFilters, MAX_FILTERS));
         this.rebuildCompiledFilters();
     }
 
@@ -207,7 +210,7 @@ public final class NBTFilterConfig {
         }
 
         final NBTTagList list = tag.getTagList(FILTERS_KEY, NBT.TAG_COMPOUND);
-        for (int i = 0; i < list.tagCount(); i++) {
+        for (int i = 0; i < Math.min(list.tagCount(), MAX_FILTERS); i++) {
             this.filters.add(NBTFilterEntry.readFromNBT(list.getCompoundTagAt(i)));
         }
         this.rebuildCompiledFilters();
