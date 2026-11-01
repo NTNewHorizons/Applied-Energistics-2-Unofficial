@@ -132,8 +132,16 @@ public final class NBTFilterConfig {
         if (tag instanceof NBTTagString string) {
             value = '"' + escapeQuotedString(string.func_150285_a_()) + '"';
         } else if (tag instanceof NBTBase.NBTPrimitive primitive) {
-            value = tag.getId() >= 1 && tag.getId() <= 4 ? Long.toString(primitive.func_150291_c())
-                    : BigDecimal.valueOf(primitive.func_150286_g()).stripTrailingZeros().toPlainString();
+            if (tag.getId() >= 1 && tag.getId() <= 4) {
+                value = Long.toString(primitive.func_150291_c());
+            } else {
+                final double numericValue = primitive.func_150286_g();
+                if (!Double.isFinite(numericValue)) {
+                    this.addGeneratedFilter(root, tag, path, NBTComparison.EXISTS, "");
+                    return;
+                }
+                value = BigDecimal.valueOf(numericValue).stripTrailingZeros().toPlainString();
+            }
         } else {
             this.addGeneratedFilter(root, tag, path, NBTComparison.EXISTS, "");
             return;

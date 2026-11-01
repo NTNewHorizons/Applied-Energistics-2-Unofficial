@@ -118,6 +118,36 @@ public class NBTFilterConfigTest {
         assertFalse(config.matches(root));
     }
 
+    @Test
+    public void copyNbtUsesExistenceRulesForNonFiniteFloatsAndDoubles() {
+        for (final double value : new double[] { Double.NaN, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY }) {
+            for (final boolean useFloat : new boolean[] { false, true }) {
+                final NBTTagCompound root = new NBTTagCompound();
+                root.setDouble("finite", 12.5);
+                if (useFloat) {
+                    root.setFloat("value", (float) value);
+                } else {
+                    root.setDouble("value", value);
+                }
+                final NBTFilterConfig generated = new NBTFilterConfig();
+
+                generated.replaceWithNBT(root, 25);
+
+                assertEquals(2, generated.getFilters().size());
+                assertEquals(NBTComparison.EQUALS, generated.getFilters().get(0).getComparison());
+                assertEquals("12.5", generated.getFilters().get(0).getValue());
+                assertEquals("value", generated.getFilters().get(1).getPath());
+                assertEquals(NBTComparison.EXISTS, generated.getFilters().get(1).getComparison());
+                assertTrue(generated.matches(root));
+                root.setDouble("finite", 13);
+                assertFalse(generated.matches(root));
+                root.setDouble("finite", 12.5);
+                root.removeTag("value");
+                assertFalse(generated.matches(root));
+            }
+        }
+    }
+
     private static NBTFilterConfig config(final String path, final NBTComparison comparison, final String value) {
         final NBTFilterConfig config = new NBTFilterConfig();
         config.addFilter(new NBTFilterEntry(path, comparison, value));
