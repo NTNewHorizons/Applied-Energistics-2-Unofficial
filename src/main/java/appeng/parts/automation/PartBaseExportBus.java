@@ -26,6 +26,7 @@ import appeng.api.parts.IPartRenderHelper;
 import appeng.api.storage.IMEInventory;
 import appeng.api.storage.IMEMonitor;
 import appeng.api.storage.StorageName;
+import appeng.api.storage.data.IAEItemStack;
 import appeng.api.storage.data.IAEStack;
 import appeng.client.texture.CableBusTextures;
 import appeng.core.AELog;
@@ -92,8 +93,9 @@ public abstract class PartBaseExportBus<StackType extends IAEStack<StackType>> e
             final SchedulingMode schedulingMode = (SchedulingMode) this.getConfigManager()
                     .getSetting(Settings.SCHEDULING_MODE);
 
-            if (this.getInstalledUpgrades(Upgrades.ORE_FILTER) == 0
-                    && this.getInstalledUpgrades(Upgrades.NBT_FILTER) == 0) {
+            final boolean hasFilterCard = this.getInstalledUpgrades(Upgrades.ORE_FILTER) > 0
+                    || this.getInstalledUpgrades(Upgrades.NBT_FILTER) > 0;
+            if (!hasFilterCard || this.craftOnly()) {
                 int x;
 
                 for (x = 0; x < this.availableSlots() && this.itemToSend > 0; x++) {
@@ -101,6 +103,10 @@ public abstract class PartBaseExportBus<StackType extends IAEStack<StackType>> e
 
                     final StackType aes = (StackType) this.getAEInventoryByName(StorageName.CONFIG)
                             .getAEStackInSlot(slotToExport);
+
+                    if (hasFilterCard
+                            && (!(aes instanceof IAEItemStack item) || !this.createItemFilter().isListed(item)))
+                        continue;
 
                     if (aes == null || this.itemToSend <= 0 || this.craftOnly()) {
                         if (this.isCraftingEnabled() && this.canInjectStackToTarget(aes)) {
@@ -224,6 +230,9 @@ public abstract class PartBaseExportBus<StackType extends IAEStack<StackType>> e
 
     @Override
     public IAEStack<?> injectCraftedItems(final ICraftingLink link, final IAEStack<?> items, final Actionable mode) {
+        if ((this.getInstalledUpgrades(Upgrades.ORE_FILTER) > 0 || this.getInstalledUpgrades(Upgrades.NBT_FILTER) > 0)
+                && (!(items instanceof IAEItemStack item) || !this.createItemFilter().isListed(item)))
+            return items;
         if (!(this.getTarget() instanceof InventoryAdaptor d)) {
             return items;
         }
