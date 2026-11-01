@@ -273,16 +273,15 @@ public final class AEItemStack extends AEStack<IAEItemStack> implements IAEItemS
         if (st instanceof IAEItemStack) {
             final IAEItemStack o = (IAEItemStack) st;
 
-            if (!mode.usesVisualDurability() && this.sameOre(o)) return true;
+            final boolean sameOre = this.sameOre(o);
+            if (!mode.usesVisualDurability() && sameOre) return true;
 
-            if (o.getItem() == this.getItem()) {
+            if (o.getItem() == this.getItem() || sameOre) {
                 final ItemStack a = this.getItemStack();
                 final ItemStack b = o.getItemStack();
                 if (FuzzyItemDurability.isComparable(a, b, mode)) return FuzzyItemDurability.matches(a, b, mode);
-                if (this.sameOre(o)) return true;
-                return this.getItemDamage() == o.getItemDamage();
+                return sameOre || this.getItemDamage() == o.getItemDamage();
             }
-            if (this.sameOre(o)) return true;
         }
 
         if (st instanceof ItemStack) {
