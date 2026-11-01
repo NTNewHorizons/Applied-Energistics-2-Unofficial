@@ -84,8 +84,11 @@ public final class ItemList implements IItemList<IAEItemStack> {
             if (or.getAEEquivalents().size() == 1) {
                 final IAEItemStack is = or.getAEEquivalents().get(0);
 
-                return this
-                        .findFuzzyDamage((AEItemStack) is, fuzzy, is.getItemDamage() == OreDictionary.WILDCARD_VALUE);
+                return this.findFuzzyDamage(
+                        (AEItemStack) is,
+                        fuzzy,
+                        is.getItemDamage() == OreDictionary.WILDCARD_VALUE,
+                        ais);
             } else {
                 final Collection<IAEItemStack> output = new LinkedList<>();
 
@@ -94,14 +97,15 @@ public final class ItemList implements IItemList<IAEItemStack> {
                             this.findFuzzyDamage(
                                     (AEItemStack) is,
                                     fuzzy,
-                                    is.getItemDamage() == OreDictionary.WILDCARD_VALUE));
+                                    is.getItemDamage() == OreDictionary.WILDCARD_VALUE,
+                                    ais));
                 }
 
                 return output;
             }
         }
 
-        return this.findFuzzyDamage(ais, fuzzy, false);
+        return this.findFuzzyDamage(ais, fuzzy, false, ais);
     }
 
     @Override
@@ -268,7 +272,7 @@ public final class ItemList implements IItemList<IAEItemStack> {
     }
 
     private Collection<IAEItemStack> findFuzzyDamage(final AEItemStack filter, final FuzzyMode fuzzy,
-            final boolean ignoreMeta) {
+            final boolean ignoreMeta, final AEItemStack originalFilter) {
         final IAEItemStack low = filter.getLow(fuzzy, ignoreMeta);
         final IAEItemStack high = filter.getHigh(fuzzy, ignoreMeta);
         if (this.records == null) {
@@ -279,7 +283,7 @@ public final class ItemList implements IItemList<IAEItemStack> {
 
         final Collection<IAEItemStack> matches = new LinkedList<>();
         for (final IAEItemStack candidate : candidates) {
-            if (filter.fuzzyComparison(candidate, fuzzy)) matches.add(candidate);
+            if (originalFilter.fuzzyComparison(candidate, fuzzy)) matches.add(candidate);
         }
         return matches;
     }

@@ -30,6 +30,7 @@ import appeng.api.config.FuzzyMode;
 import appeng.api.config.Upgrades;
 import appeng.api.implementations.items.IUpgradeModule;
 import appeng.api.storage.ICellWorkbenchItem;
+import appeng.api.storage.data.IAEFluidStack;
 import appeng.api.storage.data.IAEItemStack;
 import appeng.api.storage.data.IAEStack;
 import appeng.api.storage.data.IAEStackType;
@@ -103,6 +104,13 @@ public class ItemViewCell extends AEBaseItem implements ICellWorkbenchItem {
                     myMergedList.addNewList(
                             new CombinedItemFilter(priorityList, hasFuzzy ? fzMode : null, filter, null),
                             !hasInverter);
+                    final IItemList fluids = AEApi.instance().storage().createAEStackList();
+                    for (int x = 0; x < config.getSizeInventory(); x++) {
+                        if (config.getAEStackInSlot(x) instanceof IAEFluidStack fluid) fluids.add(fluid);
+                    }
+                    if (!fluids.isEmpty()) {
+                        myMergedList.addNewList(new PrecisePriorityList(fluids), !hasInverter);
+                    }
                 } else if (!priorityList.isEmpty()) {
                     if (hasFuzzy) {
                         myMergedList.addNewList(new FuzzyPriorityList(priorityList, fzMode), !hasInverter);
