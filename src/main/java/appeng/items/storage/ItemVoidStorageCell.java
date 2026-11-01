@@ -78,7 +78,7 @@ public class ItemVoidStorageCell extends AEBaseItem implements ICellWorkbenchIte
 
     @Override
     public IInventory getUpgradesInventory(ItemStack is) {
-        return new CellUpgrades(is, 2);
+        return new CellUpgrades(is, this.getStackType() == ITEM_STACK_TYPE ? 4 : 2);
     }
 
     @Override

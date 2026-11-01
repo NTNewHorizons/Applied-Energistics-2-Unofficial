@@ -665,6 +665,7 @@ public final class Registration {
         Upgrades.FUZZY.registerItem(items.cell1k(), 1);
         Upgrades.INVERTER.registerItem(items.cell1k(), 1);
         Upgrades.ORE_FILTER.registerItem(items.cell1k(), 1);
+        Upgrades.NBT_FILTER.registerItem(items.cell1k(), 1);
         Upgrades.STICKY.registerItem(items.cell1k(), 1);
         Upgrades.VOID_OVERFLOW.registerItem(items.cell1k(), 1);
         Upgrades.DISTRIBUTION.registerItem(items.cell1k(), 1);
@@ -672,6 +673,7 @@ public final class Registration {
         Upgrades.FUZZY.registerItem(items.cell4k(), 1);
         Upgrades.INVERTER.registerItem(items.cell4k(), 1);
         Upgrades.ORE_FILTER.registerItem(items.cell4k(), 1);
+        Upgrades.NBT_FILTER.registerItem(items.cell4k(), 1);
         Upgrades.STICKY.registerItem(items.cell4k(), 1);
         Upgrades.VOID_OVERFLOW.registerItem(items.cell4k(), 1);
         Upgrades.DISTRIBUTION.registerItem(items.cell4k(), 1);
@@ -679,6 +681,7 @@ public final class Registration {
         Upgrades.FUZZY.registerItem(items.cell16k(), 1);
         Upgrades.INVERTER.registerItem(items.cell16k(), 1);
         Upgrades.ORE_FILTER.registerItem(items.cell16k(), 1);
+        Upgrades.NBT_FILTER.registerItem(items.cell16k(), 1);
         Upgrades.STICKY.registerItem(items.cell16k(), 1);
         Upgrades.VOID_OVERFLOW.registerItem(items.cell16k(), 1);
         Upgrades.DISTRIBUTION.registerItem(items.cell16k(), 1);
@@ -686,6 +689,7 @@ public final class Registration {
         Upgrades.FUZZY.registerItem(items.cell64k(), 1);
         Upgrades.INVERTER.registerItem(items.cell64k(), 1);
         Upgrades.ORE_FILTER.registerItem(items.cell64k(), 1);
+        Upgrades.NBT_FILTER.registerItem(items.cell64k(), 1);
         Upgrades.STICKY.registerItem(items.cell64k(), 1);
         Upgrades.VOID_OVERFLOW.registerItem(items.cell64k(), 1);
         Upgrades.DISTRIBUTION.registerItem(items.cell64k(), 1);
@@ -693,6 +697,7 @@ public final class Registration {
         Upgrades.FUZZY.registerItem(items.cell256k(), 1);
         Upgrades.INVERTER.registerItem(items.cell256k(), 1);
         Upgrades.ORE_FILTER.registerItem(items.cell256k(), 1);
+        Upgrades.NBT_FILTER.registerItem(items.cell256k(), 1);
         Upgrades.STICKY.registerItem(items.cell256k(), 1);
         Upgrades.VOID_OVERFLOW.registerItem(items.cell256k(), 1);
         Upgrades.DISTRIBUTION.registerItem(items.cell256k(), 1);
@@ -700,6 +705,7 @@ public final class Registration {
         Upgrades.FUZZY.registerItem(items.cell1024k(), 1);
         Upgrades.INVERTER.registerItem(items.cell1024k(), 1);
         Upgrades.ORE_FILTER.registerItem(items.cell1024k(), 1);
+        Upgrades.NBT_FILTER.registerItem(items.cell1024k(), 1);
         Upgrades.STICKY.registerItem(items.cell1024k(), 1);
         Upgrades.VOID_OVERFLOW.registerItem(items.cell1024k(), 1);
         Upgrades.DISTRIBUTION.registerItem(items.cell1024k(), 1);
@@ -707,6 +713,7 @@ public final class Registration {
         Upgrades.FUZZY.registerItem(items.cell4096k(), 1);
         Upgrades.INVERTER.registerItem(items.cell4096k(), 1);
         Upgrades.ORE_FILTER.registerItem(items.cell4096k(), 1);
+        Upgrades.NBT_FILTER.registerItem(items.cell4096k(), 1);
         Upgrades.STICKY.registerItem(items.cell4096k(), 1);
         Upgrades.VOID_OVERFLOW.registerItem(items.cell4096k(), 1);
         Upgrades.DISTRIBUTION.registerItem(items.cell4096k(), 1);
@@ -714,6 +721,7 @@ public final class Registration {
         Upgrades.FUZZY.registerItem(items.cell16384k(), 1);
         Upgrades.INVERTER.registerItem(items.cell16384k(), 1);
         Upgrades.ORE_FILTER.registerItem(items.cell16384k(), 1);
+        Upgrades.NBT_FILTER.registerItem(items.cell16384k(), 1);
         Upgrades.STICKY.registerItem(items.cell16384k(), 1);
         Upgrades.VOID_OVERFLOW.registerItem(items.cell16384k(), 1);
         Upgrades.DISTRIBUTION.registerItem(items.cell16384k(), 1);
@@ -721,11 +729,13 @@ public final class Registration {
         Upgrades.FUZZY.registerItem(items.cellVoid(), 1);
         Upgrades.INVERTER.registerItem(items.cellVoid(), 1);
         Upgrades.ORE_FILTER.registerItem(items.cellVoid(), 1);
+        Upgrades.NBT_FILTER.registerItem(items.cellVoid(), 1);
         Upgrades.STICKY.registerItem(items.cellVoid(), 1);
 
         Upgrades.FUZZY.registerItem(items.cellContainer(), 1);
         Upgrades.INVERTER.registerItem(items.cellContainer(), 1);
         Upgrades.ORE_FILTER.registerItem(items.cellContainer(), 1);
+        Upgrades.NBT_FILTER.registerItem(items.cellContainer(), 1);
         Upgrades.STICKY.registerItem(items.cellContainer(), 1);
         Upgrades.VOID_OVERFLOW.registerItem(items.cellContainer(), 1);
         Upgrades.DISTRIBUTION.registerItem(items.cellContainer(), 1);
@@ -733,6 +743,7 @@ public final class Registration {
         Upgrades.FUZZY.registerItem(items.cellQuantum(), 1);
         Upgrades.INVERTER.registerItem(items.cellQuantum(), 1);
         Upgrades.ORE_FILTER.registerItem(items.cellQuantum(), 1);
+        Upgrades.NBT_FILTER.registerItem(items.cellQuantum(), 1);
         Upgrades.STICKY.registerItem(items.cellQuantum(), 1);
         Upgrades.VOID_OVERFLOW.registerItem(items.cellQuantum(), 1);
         Upgrades.DISTRIBUTION.registerItem(items.cellQuantum(), 1);
@@ -740,6 +751,7 @@ public final class Registration {
         Upgrades.FUZZY.registerItem(items.cellSingularity(), 1);
         Upgrades.INVERTER.registerItem(items.cellSingularity(), 1);
         Upgrades.ORE_FILTER.registerItem(items.cellSingularity(), 1);
+        Upgrades.NBT_FILTER.registerItem(items.cellSingularity(), 1);
         Upgrades.STICKY.registerItem(items.cellSingularity(), 1);
         Upgrades.VOID_OVERFLOW.registerItem(items.cellSingularity(), 1);
         Upgrades.DISTRIBUTION.registerItem(items.cellSingularity(), 1);
@@ -747,6 +759,7 @@ public final class Registration {
         Upgrades.FUZZY.registerItem(items.cellUniverse(), 1);
         Upgrades.INVERTER.registerItem(items.cellUniverse(), 1);
         Upgrades.ORE_FILTER.registerItem(items.cellUniverse(), 1);
+        Upgrades.NBT_FILTER.registerItem(items.cellUniverse(), 1);
         Upgrades.STICKY.registerItem(items.cellUniverse(), 1);
         Upgrades.VOID_OVERFLOW.registerItem(items.cellUniverse(), 1);
         Upgrades.DISTRIBUTION.registerItem(items.cellUniverse(), 1);
@@ -754,11 +767,13 @@ public final class Registration {
         Upgrades.FUZZY.registerItem(items.portableCell(), 1);
         Upgrades.INVERTER.registerItem(items.portableCell(), 1);
         Upgrades.ORE_FILTER.registerItem(items.portableCell(), 1);
+        Upgrades.NBT_FILTER.registerItem(items.portableCell(), 1);
         Upgrades.STICKY.registerItem(items.portableCell(), 1);
 
         Upgrades.FUZZY.registerItem(items.viewCell(), 1);
         Upgrades.INVERTER.registerItem(items.viewCell(), 1);
         Upgrades.ORE_FILTER.registerItem(items.viewCell(), 1);
+        Upgrades.NBT_FILTER.registerItem(items.viewCell(), 1);
 
         // Storage Bus
         Upgrades.FUZZY.registerItem(parts.storageBus(), 1);

@@ -30,6 +30,7 @@ import appeng.api.storage.StorageName;
 import appeng.api.storage.data.IAEStackType;
 import appeng.api.util.IConfigManager;
 import appeng.helpers.ICellRestriction;
+import appeng.helpers.INBTFilterable;
 import appeng.helpers.IPrimaryGuiIconProvider;
 import appeng.tile.AEBaseTile;
 import appeng.tile.TileEvent;
@@ -39,8 +40,9 @@ import appeng.tile.inventory.IAEStackInventory;
 import appeng.tile.inventory.InvOperation;
 import appeng.util.ConfigManager;
 import appeng.util.Platform;
+import appeng.util.nbt.NBTFilterConfig;
 
-public class TileCellWorkbench extends AEBaseTile implements ICellWorkbench, IPrimaryGuiIconProvider {
+public class TileCellWorkbench extends AEBaseTile implements ICellWorkbench, IPrimaryGuiIconProvider, INBTFilterable {
 
     private final AppEngInternalInventory cell = new AppEngInternalInventory(this, 1);
     private final IAEStackInventory config = new IAEStackInventory(this, 63);
@@ -197,6 +199,10 @@ public class TileCellWorkbench extends AEBaseTile implements ICellWorkbench, IPr
             this.locked = false;
         } else if (inv == cacheUpgrades) {
             if (getInstalledUpgrades(Upgrades.ORE_FILTER) == 0) setFilter("");
+            final ItemStack stack = this.cell.getStackInSlot(0);
+            if (getInstalledUpgrades(Upgrades.NBT_FILTER) == 0 && stack != null && stack.hasTagCompound()) {
+                stack.getTagCompound().removeTag(NBTFilterConfig.NBT_KEY);
+            }
         }
     }
 
@@ -265,6 +271,21 @@ public class TileCellWorkbench extends AEBaseTile implements ICellWorkbench, IPr
         ItemStack is = this.cell.getStackInSlot(0);
         if (is != null && is.getItem() instanceof ICellWorkbenchItem)
             ((ICellWorkbenchItem) is.getItem()).setOreFilter(is, filter);
+    }
+
+    @Override
+    public NBTFilterConfig getNBTFilterConfig() {
+        final ICellWorkbenchItem item = this.getCell();
+        return item == null ? new NBTFilterConfig() : item.getNBTFilterConfig(this.cell.getStackInSlot(0));
+    }
+
+    @Override
+    public void setNBTFilterConfig(final NBTFilterConfig config) {
+        final ICellWorkbenchItem item = this.getCell();
+        if (item != null && this.getInstalledUpgrades(Upgrades.NBT_FILTER) > 0) {
+            item.setNBTFilterConfig(this.cell.getStackInSlot(0), config);
+            this.cell.markDirty();
+        }
     }
 
     @Override

@@ -141,7 +141,7 @@ public abstract class AEBasePortableCell extends AEBasePoweredItem implements IS
 
     @Override
     public IInventory getUpgradesInventory(final ItemStack is) {
-        return new CellUpgrades(is, 2);
+        return new CellUpgrades(is, this.getStackType() == ITEM_STACK_TYPE ? 4 : 2);
     }
 
     @Override

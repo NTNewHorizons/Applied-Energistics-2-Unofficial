@@ -78,6 +78,7 @@ public class ItemViewCell extends AEBaseItem implements ICellWorkbenchItem {
                 boolean hasInverter = false;
                 boolean hasFuzzy = false;
                 boolean hasOreFilter = false;
+                boolean hasNBTFilter = false;
                 for (int x = 0; x < upgrades.getSizeInventory(); x++) {
                     final ItemStack is = upgrades.getStackInSlot(x);
                     if (is != null && is.getItem() instanceof IUpgradeModule) {
@@ -87,6 +88,7 @@ public class ItemViewCell extends AEBaseItem implements ICellWorkbenchItem {
                                 case FUZZY -> hasFuzzy = true;
                                 case INVERTER -> hasInverter = true;
                                 case ORE_FILTER -> hasOreFilter = true;
+                                case NBT_FILTER -> hasNBTFilter = true;
                                 default -> {}
                             }
                         }
@@ -100,9 +102,13 @@ public class ItemViewCell extends AEBaseItem implements ICellWorkbenchItem {
                     if (aes != null) priorityList.add(aes);
                 }
 
-                if (hasOreFilter) {
+                if (hasOreFilter || hasNBTFilter) {
                     myMergedList.addNewList(
-                            new CombinedItemFilter(priorityList, hasFuzzy ? fzMode : null, filter, null),
+                            new CombinedItemFilter(
+                                    priorityList,
+                                    hasFuzzy ? fzMode : null,
+                                    hasOreFilter ? filter : null,
+                                    hasNBTFilter ? vc.getNBTFilterConfig(currentViewCell) : null),
                             !hasInverter);
                     final IItemList fluids = AEApi.instance().storage().createAEStackList();
                     for (int x = 0; x < config.getSizeInventory(); x++) {
@@ -140,7 +146,7 @@ public class ItemViewCell extends AEBaseItem implements ICellWorkbenchItem {
 
     @Override
     public IInventory getUpgradesInventory(final ItemStack is) {
-        return new CellUpgrades(is, 2);
+        return new CellUpgrades(is, 4);
     }
 
     @Override

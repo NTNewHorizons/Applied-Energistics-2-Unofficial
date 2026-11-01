@@ -17,6 +17,7 @@ import static appeng.util.item.AEItemStackType.ITEM_STACK_TYPE;
 
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -25,6 +26,7 @@ import appeng.api.storage.data.IAEStackType;
 import appeng.items.contents.CellConfigLegacy;
 import appeng.items.contents.CellConfigLegacyWrapper;
 import appeng.tile.inventory.IAEStackInventory;
+import appeng.util.nbt.NBTFilterConfig;
 
 public interface ICellWorkbenchItem {
 
@@ -83,6 +85,19 @@ public interface ICellWorkbenchItem {
      * @param filter new ore dictionary filter
      */
     default void setOreFilter(ItemStack is, String filter) {}
+
+    default NBTFilterConfig getNBTFilterConfig(ItemStack is) {
+        final NBTFilterConfig config = new NBTFilterConfig();
+        if (is.hasTagCompound() && is.getTagCompound().hasKey(NBTFilterConfig.NBT_KEY)) {
+            config.readFromNBT(is.getTagCompound());
+        }
+        return config;
+    }
+
+    default void setNBTFilterConfig(ItemStack is, NBTFilterConfig config) {
+        if (!is.hasTagCompound()) is.setTagCompound(new NBTTagCompound());
+        config.writeToNBT(is.getTagCompound());
+    }
 
     /**
      * @return stack type for this cell. null for all types.
