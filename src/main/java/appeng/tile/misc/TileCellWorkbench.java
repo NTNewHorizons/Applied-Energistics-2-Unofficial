@@ -137,6 +137,17 @@ public class TileCellWorkbench extends AEBaseTile implements ICellWorkbench, IPr
     @Override
     public void onChangeInventory(final IInventory inv, final int slot, final InvOperation mc,
             final ItemStack removedStack, final ItemStack newStack) {
+        if (inv != null && inv == this.cacheUpgrades) {
+            if (Platform.isServer()) {
+                if (getInstalledUpgrades(Upgrades.ORE_FILTER) == 0) setFilter("");
+                final ItemStack stack = this.cell.getStackInSlot(0);
+                if (getInstalledUpgrades(Upgrades.NBT_FILTER) == 0 && stack != null && stack.hasTagCompound()) {
+                    stack.getTagCompound().removeTag(NBTFilterConfig.NBT_KEY);
+                }
+                this.saveChanges();
+            }
+            return;
+        }
         if (mc == InvOperation.markDirty) {
             this.saveChanges();
             return;
@@ -197,12 +208,6 @@ public class TileCellWorkbench extends AEBaseTile implements ICellWorkbench, IPr
             }
 
             this.locked = false;
-        } else if (inv == cacheUpgrades) {
-            if (getInstalledUpgrades(Upgrades.ORE_FILTER) == 0) setFilter("");
-            final ItemStack stack = this.cell.getStackInSlot(0);
-            if (getInstalledUpgrades(Upgrades.NBT_FILTER) == 0 && stack != null && stack.hasTagCompound()) {
-                stack.getTagCompound().removeTag(NBTFilterConfig.NBT_KEY);
-            }
         }
     }
 

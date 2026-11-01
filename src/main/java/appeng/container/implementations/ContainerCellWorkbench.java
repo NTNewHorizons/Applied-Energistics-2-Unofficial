@@ -45,6 +45,7 @@ import appeng.container.sync.handlers.ConfigEnumSyncHandler;
 import appeng.helpers.ICellRestriction;
 import appeng.tile.inventory.AppEngNullInventory;
 import appeng.tile.inventory.IAEStackInventory;
+import appeng.tile.inventory.InvOperation;
 import appeng.util.IterationCounter;
 import appeng.util.Platform;
 import appeng.util.inv.IUpgradeInventory;
@@ -252,7 +253,7 @@ public class ContainerCellWorkbench extends ContainerUpgradeable {
         public ItemStack decrStackSize(final int i, final int j) {
             final IInventory inv = ContainerCellWorkbench.this.getCellUpgradeInventory();
             final ItemStack is = inv.decrStackSize(i, j);
-            inv.markDirty();
+            this.markDirty();
             return is;
         }
 
@@ -260,7 +261,7 @@ public class ContainerCellWorkbench extends ContainerUpgradeable {
         public ItemStack getStackInSlotOnClosing(final int i) {
             final IInventory inv = ContainerCellWorkbench.this.getCellUpgradeInventory();
             final ItemStack is = inv.getStackInSlotOnClosing(i);
-            inv.markDirty();
+            this.markDirty();
             return is;
         }
 
@@ -268,7 +269,7 @@ public class ContainerCellWorkbench extends ContainerUpgradeable {
         public void setInventorySlotContents(final int i, final ItemStack itemstack) {
             final IInventory inv = ContainerCellWorkbench.this.getCellUpgradeInventory();
             inv.setInventorySlotContents(i, itemstack);
-            inv.markDirty();
+            this.markDirty();
         }
 
         @Override
@@ -288,8 +289,13 @@ public class ContainerCellWorkbench extends ContainerUpgradeable {
 
         @Override
         public void markDirty() {
+            final IInventory inv = ContainerCellWorkbench.this.getCellUpgradeInventory();
+            inv.markDirty();
             if (ContainerCellWorkbench.this.getUpgradeable().getInstalledUpgrades(Upgrades.FUZZY) == 0) {
                 ContainerCellWorkbench.this.setFuzzy(FuzzyMode.IGNORE_ALL);
+            }
+            if (Platform.isServer()) {
+                ContainerCellWorkbench.this.workBench.onChangeInventory(inv, -1, InvOperation.markDirty, null, null);
             }
         }
 
