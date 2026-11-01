@@ -53,6 +53,8 @@ import appeng.util.InventoryAdaptor;
 import appeng.util.IterationCounter;
 import appeng.util.Platform;
 import appeng.util.ReadableNumberConverter;
+import appeng.util.nbt.NBTFilterConfig;
+import appeng.util.prioitylist.CombinedItemFilter;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
@@ -177,9 +179,13 @@ public abstract class AEBaseCell extends AEBaseItem implements IStorageCell, IIt
 
         if (handler.isPreformatted()) {
             String filter = cellInventory.getOreFilter();
-            if (filter.isEmpty()) {
-                final String list = (handler.getIncludeExcludeMode() == IncludeExclude.WHITELIST ? GuiText.Included
-                        : GuiText.Excluded).getLocal();
+            final CombinedItemFilter combinedFilter = handler.getPartitionList() instanceof CombinedItemFilter combined
+                    ? combined
+                    : null;
+            final NBTFilterConfig nbtFilter = combinedFilter == null ? null : combinedFilter.getNBTFilterConfig();
+            final String list = (handler.getIncludeExcludeMode() == IncludeExclude.WHITELIST ? GuiText.Included
+                    : GuiText.Excluded).getLocal();
+            if (!cellInventory.getConfigAEInventory().isEmpty()) {
 
                 if (handler.isFuzzy()) {
                     lines.add(GuiText.Partitioned.getLocal() + " - " + list + ' ' + GuiText.Fuzzy.getLocal());
@@ -209,8 +215,18 @@ public abstract class AEBaseCell extends AEBaseItem implements IStorageCell, IIt
                     }
 
                 }
-            } else {
-                lines.add(GuiText.PartitionedOre.getLocal() + " : " + filter);
+            }
+            if (combinedFilter != null && combinedFilter.hasOreFilter()) {
+                lines.add(
+                        GuiText.PartitionedOre.getLocal() + " : "
+                                + (filter.trim().isEmpty() ? GuiText.Empty.getLocal() : filter));
+            }
+            if (nbtFilter != null) {
+                lines.add(
+                        GuiText.Partitioned.getLocal() + " - "
+                                + list
+                                + ' '
+                                + GuiText.PartitionedNBT.getLocal(nbtFilter.getFilters().size()));
             }
 
             if (handler.getSticky()) {

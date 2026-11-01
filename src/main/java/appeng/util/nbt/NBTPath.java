@@ -9,7 +9,10 @@ import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 
-/** A deliberately small, precompiled path made of compound keys and list indices. */
+/**
+ * A precompiled path using Minecraft-style NBT path syntax: dot-separated compound keys, bracketed list indices, and
+ * double-quoted literal keys with escaped quotes and backslashes. Numeric compound keys must be quoted.
+ */
 public final class NBTPath {
 
     private final PathElement[] elements;
@@ -23,24 +26,74 @@ public final class NBTPath {
         if (source == null || source.trim().isEmpty()) return null;
 
         final List<PathElement> elements = new ArrayList<>();
-        int start = 0;
-        for (int i = 0; i <= source.length(); i++) {
-            if (i != source.length() && source.charAt(i) != '.') continue;
-            if (i == start) return null;
-
-            final String token = source.substring(start, i);
-            if (isUnsignedInteger(token)) {
+        int position = 0;
+        while (position < source.length()) {
+            if (source.charAt(position) == '"') {
+                final StringBuilder key = new StringBuilder();
+                boolean closed = false;
+                position++;
+                while (position < source.length()) {
+                    char character = source.charAt(position++);
+                    if (character == '"') {
+                        closed = true;
+                        break;
+                    }
+                    if (character == '\\') {
+                        if (position == source.length()) return null;
+                        character = source.charAt(position++);
+                        if (character != '"' && character != '\\') return null;
+                    }
+                    key.append(character);
+                }
+                if (!closed) return null;
+                elements.add(new CompoundKey(key.toString()));
+            } else {
+                final int start = position;
+                while (position < source.length() && source.charAt(position) != '.'
+                        && source.charAt(position) != '['
+                        && source.charAt(position) != ']')
+                    position++;
+                if (position == start) return null;
+                final String token = source.substring(start, position);
+                if (isUnsignedInteger(token)) return null;
+                elements.add(new CompoundKey(token));
+            }
+            while (position < source.length() && source.charAt(position) == '[') {
+                final int start = ++position;
+                while (position < source.length() && source.charAt(position) >= '0' && source.charAt(position) <= '9')
+                    position++;
+                if (position == start || position == source.length() || source.charAt(position) != ']') return null;
                 try {
-                    elements.add(new ListIndex(Integer.parseInt(token)));
+                    elements.add(new ListIndex(Integer.parseInt(source.substring(start, position))));
                 } catch (final NumberFormatException ignored) {
                     return null;
                 }
-            } else {
-                elements.add(new CompoundKey(token));
+                position++;
             }
-            start = i + 1;
+            if (position == source.length()) break;
+            if (source.charAt(position++) != '.' || position == source.length()) return null;
         }
         return elements.isEmpty() ? null : new NBTPath(elements.toArray(new PathElement[0]));
+    }
+
+    static String appendCompoundKey(final String parentPath, final String key) {
+        final String encodedKey = encodeCompoundKey(key);
+        return parentPath.isEmpty() ? encodedKey : parentPath + '.' + encodedKey;
+    }
+
+    static String appendListIndex(final String parentPath, final int index) {
+        return parentPath + '[' + index + ']';
+    }
+
+    private static String encodeCompoundKey(final String key) {
+        if (!key.trim().isEmpty() && !isUnsignedInteger(key)
+                && key.indexOf('.') < 0
+                && key.indexOf('[') < 0
+                && key.indexOf(']') < 0
+                && key.indexOf('"') < 0
+                && key.indexOf('\\') < 0)
+            return key;
+        return '"' + key.replace("\\", "\\\\").replace("\"", "\\\"") + '"';
     }
 
     private static boolean isUnsignedInteger(final String token) {

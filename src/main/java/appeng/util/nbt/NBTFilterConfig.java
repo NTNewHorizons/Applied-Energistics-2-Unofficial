@@ -15,6 +15,7 @@ import net.minecraftforge.common.util.Constants.NBT;
 public final class NBTFilterConfig {
 
     public static final String NBT_KEY = "NBTFilter";
+    public static final int MAX_FILTERS = 25;
     private static final String MODE_KEY = "Mode";
     private static final String FILTERS_KEY = "Filters";
 
@@ -58,6 +59,7 @@ public final class NBTFilterConfig {
     }
 
     public void addFilter(final NBTFilterEntry entry) {
+        if (this.filters.size() >= MAX_FILTERS) return;
         this.filters.add(entry == null ? new NBTFilterEntry() : entry);
         this.rebuildCompiledFilters();
     }
@@ -85,7 +87,8 @@ public final class NBTFilterConfig {
     public void replaceWithNBT(final NBTTagCompound root, final int maxFilters) {
         this.filters.clear();
         this.mode = NBTFilterMode.ALL;
-        if (root != null && maxFilters > 0) this.addFiltersFromCompound(root, root, "", maxFilters);
+        if (root != null && maxFilters > 0)
+            this.addFiltersFromCompound(root, root, "", Math.min(maxFilters, MAX_FILTERS));
         this.rebuildCompiledFilters();
     }
 
@@ -95,7 +98,7 @@ public final class NBTFilterConfig {
         Collections.sort(keys);
         for (final String key : keys) {
             if (this.filters.size() >= maxFilters) return;
-            final String path = parentPath.isEmpty() ? key : parentPath + '.' + key;
+            final String path = NBTPath.appendCompoundKey(parentPath, key);
             this.addFiltersFromTag(root, compound.getTag(key), path, maxFilters);
         }
     }
@@ -118,7 +121,11 @@ public final class NBTFilterConfig {
                 this.addGeneratedFilter(root, tag, path, NBTComparison.EXISTS, "");
             } else {
                 for (int i = 0; i < list.tagCount() && this.filters.size() < maxFilters; i++) {
-                    this.addFiltersFromTag(root, (NBTBase) list.tagList.get(i), path + '.' + i, maxFilters);
+                    this.addFiltersFromTag(
+                            root,
+                            (NBTBase) list.tagList.get(i),
+                            NBTPath.appendListIndex(path, i),
+                            maxFilters);
                 }
             }
             return;
@@ -128,8 +135,16 @@ public final class NBTFilterConfig {
         if (tag instanceof NBTTagString string) {
             value = '"' + escapeQuotedString(string.func_150285_a_()) + '"';
         } else if (tag instanceof NBTBase.NBTPrimitive primitive) {
-            value = tag.getId() >= 1 && tag.getId() <= 4 ? Long.toString(primitive.func_150291_c())
-                    : BigDecimal.valueOf(primitive.func_150286_g()).stripTrailingZeros().toPlainString();
+            if (tag.getId() >= 1 && tag.getId() <= 4) {
+                value = Long.toString(primitive.func_150291_c());
+            } else {
+                final double numericValue = primitive.func_150286_g();
+                if (!Double.isFinite(numericValue)) {
+                    this.addGeneratedFilter(root, tag, path, NBTComparison.EXISTS, "");
+                    return;
+                }
+                value = BigDecimal.valueOf(numericValue).stripTrailingZeros().toPlainString();
+            }
         } else {
             this.addGeneratedFilter(root, tag, path, NBTComparison.EXISTS, "");
             return;
@@ -195,7 +210,7 @@ public final class NBTFilterConfig {
         }
 
         final NBTTagList list = tag.getTagList(FILTERS_KEY, NBT.TAG_COMPOUND);
-        for (int i = 0; i < list.tagCount(); i++) {
+        for (int i = 0; i < Math.min(list.tagCount(), MAX_FILTERS); i++) {
             this.filters.add(NBTFilterEntry.readFromNBT(list.getCompoundTagAt(i)));
         }
         this.rebuildCompiledFilters();

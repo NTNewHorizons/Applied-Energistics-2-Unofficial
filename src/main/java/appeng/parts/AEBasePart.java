@@ -63,6 +63,7 @@ import appeng.api.util.IConfigManager;
 import appeng.core.sync.GuiBridge;
 import appeng.helpers.ICustomNameObject;
 import appeng.helpers.IInterfaceHost;
+import appeng.helpers.INBTFilterable;
 import appeng.helpers.IOreFilterable;
 import appeng.helpers.IPriorityHost;
 import appeng.items.tools.ToolMemoryCard;
@@ -78,6 +79,7 @@ import appeng.tile.inventory.IIAEStackInventory;
 import appeng.util.AEStackTypeFilter;
 import appeng.util.Platform;
 import appeng.util.SettingsFrom;
+import appeng.util.nbt.NBTFilterConfig;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import io.netty.buffer.ByteBuf;
@@ -368,6 +370,12 @@ public abstract class AEBasePart implements IPart, IGridProxyable, IActionHost, 
         if (this instanceof IOreFilterable oreFilterable && compound.hasKey("filter", NBT.TAG_STRING)) {
             oreFilterable.setFilter(compound.getString("filter"));
         }
+        if (this instanceof INBTFilterable nbtFilterable
+                && compound.hasKey(NBTFilterConfig.NBT_KEY, NBT.TAG_COMPOUND)) {
+            final NBTFilterConfig config = new NBTFilterConfig();
+            config.readFromNBT(compound);
+            nbtFilterable.setNBTFilterConfig(config);
+        }
     }
 
     /**
@@ -410,6 +418,9 @@ public abstract class AEBasePart implements IPart, IGridProxyable, IActionHost, 
         if (this instanceof IOreFilterable oreFilterable) {
             String filter = oreFilterable.getFilter();
             output.setString("filter", filter == null ? "" : filter);
+        }
+        if (this instanceof INBTFilterable nbtFilterable) {
+            nbtFilterable.getNBTFilterConfig().writeToNBT(output);
         }
 
         return output;

@@ -273,16 +273,15 @@ public final class AEItemStack extends AEStack<IAEItemStack> implements IAEItemS
         if (st instanceof IAEItemStack) {
             final IAEItemStack o = (IAEItemStack) st;
 
-            if (!mode.usesVisualDurability() && this.sameOre(o)) return true;
+            final boolean sameOre = this.sameOre(o);
+            if (!mode.usesVisualDurability() && sameOre) return true;
 
-            if (o.getItem() == this.getItem()) {
+            if (o.getItem() == this.getItem() || sameOre) {
                 final ItemStack a = this.getItemStack();
                 final ItemStack b = o.getItemStack();
                 if (FuzzyItemDurability.isComparable(a, b, mode)) return FuzzyItemDurability.matches(a, b, mode);
-                if (this.sameOre(o)) return true;
-                return this.getItemDamage() == o.getItemDamage();
+                return sameOre || this.getItemDamage() == o.getItemDamage();
             }
-            if (this.sameOre(o)) return true;
         }
 
         if (st instanceof ItemStack) {
@@ -533,13 +532,13 @@ public final class AEItemStack extends AEStack<IAEItemStack> implements IAEItemS
         final AEItemStack bottom = new AEItemStack(this);
         final AEItemDef newDef = bottom.setDefinition(bottom.getDefinition().copy());
 
-        if (ignoreMeta) {
+        if (ignoreMeta && !fuzzy.usesVisualDurability()) {
             newDef.setDisplayDamage(newDef.setDamageValue(0));
             newDef.reHash();
             return bottom;
         }
 
-        if (fuzzy.usesVisualDurability() && newDef.getItem().isDamageable()) {
+        if (fuzzy.usesVisualDurability()) {
             newDef.setDamageValue(Integer.MIN_VALUE);
             newDef.setDisplayDamage(Integer.MIN_VALUE);
         } else if (newDef.getItem().isDamageable()) {
@@ -557,9 +556,6 @@ public final class AEItemStack extends AEStack<IAEItemStack> implements IAEItemS
             }
 
             newDef.setDamageValue(newDef.getDisplayDamage());
-        } else if (fuzzy.usesVisualDurability()) {
-            // Display damage can vary with NBT even when the item has no damage value.
-            newDef.setDisplayDamage(Integer.MIN_VALUE);
         }
 
         newDef.setTagCompound(AEItemDef.LOW_TAG);
@@ -571,13 +567,13 @@ public final class AEItemStack extends AEStack<IAEItemStack> implements IAEItemS
         final AEItemStack top = new AEItemStack(this);
         final AEItemDef newDef = top.setDefinition(top.getDefinition().copy());
 
-        if (ignoreMeta) {
+        if (ignoreMeta && !fuzzy.usesVisualDurability()) {
             newDef.setDisplayDamage(newDef.setDamageValue(Integer.MAX_VALUE));
             newDef.reHash();
             return top;
         }
 
-        if (fuzzy.usesVisualDurability() && newDef.getItem().isDamageable()) {
+        if (fuzzy.usesVisualDurability()) {
             newDef.setDamageValue(Integer.MAX_VALUE);
             newDef.setDisplayDamage(Integer.MAX_VALUE);
         } else if (newDef.getItem().isDamageable()) {
@@ -597,8 +593,6 @@ public final class AEItemStack extends AEStack<IAEItemStack> implements IAEItemS
             }
 
             newDef.setDamageValue(newDef.getDisplayDamage());
-        } else if (fuzzy.usesVisualDurability()) {
-            newDef.setDisplayDamage(Integer.MAX_VALUE);
         }
 
         newDef.setTagCompound(AEItemDef.HIGH_TAG);

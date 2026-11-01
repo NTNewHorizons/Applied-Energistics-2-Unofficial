@@ -55,6 +55,7 @@ public abstract class PartSharedItemBus<StackType extends IAEStack<StackType>> e
     private final IAEStackInventory config = new IAEStackInventory(this, 9);
     private int cachedAdaptorHash = 0;
     private InventoryAdaptor cachedAdaptor;
+    private CombinedItemFilter cachedItemFilter;
     private boolean lastRedstone = false;
     private boolean pendingStateUpdate = false;
     protected String oreFilterString = "";
@@ -72,13 +73,18 @@ public abstract class PartSharedItemBus<StackType extends IAEStack<StackType>> e
 
     @Override
     public void updateSetting(final IConfigManager manager, final Enum settingName, final Enum newValue) {
+        if (settingName == Settings.FUZZY_MODE) this.cachedItemFilter = null;
         this.updateState();
     }
 
     @Override
     public void upgradesChanged() {
+        this.cachedItemFilter = null;
         if (getInstalledUpgrades(Upgrades.ORE_FILTER) == 0) {
             oreFilterString = "";
+        }
+        if (getInstalledUpgrades(Upgrades.NBT_FILTER) == 0) {
+            this.nbtFilterConfig.replaceWith(null);
         }
         this.updateState();
     }
@@ -89,6 +95,7 @@ public abstract class PartSharedItemBus<StackType extends IAEStack<StackType>> e
         this.config.readFromNBT(extra, "config");
         this.oreFilterString = extra.getString("filter");
         this.nbtFilterConfig.readFromNBT(extra);
+        this.cachedItemFilter = null;
     }
 
     @Override
@@ -213,9 +220,13 @@ public abstract class PartSharedItemBus<StackType extends IAEStack<StackType>> e
     @Override
     public void setFilter(String filter) {
         oreFilterString = filter;
+        this.cachedItemFilter = null;
     }
 
     protected CombinedItemFilter createItemFilter() {
+        // Retain the compiled predicates, including the ore dictionary lookup cache, between cycles.
+        if (this.cachedItemFilter != null) return this.cachedItemFilter;
+
         final List<IAEItemStack> configuredItems = new ArrayList<>();
         for (int i = 0; i < this.availableSlots(); i++) {
             if (this.config.getAEStackInSlot(i) instanceof IAEItemStack filter) configuredItems.add(filter);
@@ -227,7 +238,8 @@ public abstract class PartSharedItemBus<StackType extends IAEStack<StackType>> e
         final String oreExpression = this.getInstalledUpgrades(Upgrades.ORE_FILTER) > 0 ? this.oreFilterString : null;
         final NBTFilterConfig nbtFilter = this.getInstalledUpgrades(Upgrades.NBT_FILTER) > 0 ? this.nbtFilterConfig
                 : null;
-        return new CombinedItemFilter(configuredItems, fuzzyMode, oreExpression, nbtFilter);
+        this.cachedItemFilter = new CombinedItemFilter(configuredItems, fuzzyMode, oreExpression, nbtFilter);
+        return this.cachedItemFilter;
     }
 
     @Override
@@ -238,6 +250,7 @@ public abstract class PartSharedItemBus<StackType extends IAEStack<StackType>> e
     @Override
     public void setNBTFilterConfig(final NBTFilterConfig config) {
         this.nbtFilterConfig.replaceWith(config);
+        this.cachedItemFilter = null;
         if (this.getHost() != null) this.getHost().markForSave();
         this.updateState();
     }
@@ -277,7 +290,9 @@ public abstract class PartSharedItemBus<StackType extends IAEStack<StackType>> e
     }
 
     @Override
-    public void saveAEStackInv() {}
+    public void saveAEStackInv() {
+        this.cachedItemFilter = null;
+    }
 
     @Override
     public IAEStackInventory getAEInventoryByName(StorageName name) {

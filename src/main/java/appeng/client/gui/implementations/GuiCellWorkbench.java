@@ -77,12 +77,18 @@ public class GuiCellWorkbench extends GuiUpgradeable {
                 this.guiTop + 8,
                 Settings.ACTIONS,
                 ActionItems.CELL_RESTRICTION);
+        this.nbtFilter = new GuiImgButton(
+                this.guiLeft - 18,
+                this.guiTop + 68,
+                Settings.ACTIONS,
+                ActionItems.NBT_FILTER);
 
         this.buttonList.add(this.fuzzyMode);
         this.buttonList.add(this.partition);
         this.buttonList.add(this.clear);
         this.buttonList.add(this.copyMode);
         this.buttonList.add(this.oreFilter);
+        this.buttonList.add(this.nbtFilter);
         this.buttonList.add(this.cellRestriction);
 
         initVirtualSlots();
@@ -193,10 +199,13 @@ public class GuiCellWorkbench extends GuiUpgradeable {
 
         final boolean hasFuzzy = this.cvb.getUpgradeable().getInstalledUpgrades(Upgrades.FUZZY) != 0;
         final boolean hasOreFilter = this.cvb.getUpgradeable().getInstalledUpgrades(Upgrades.ORE_FILTER) != 0;
+        final boolean hasNBTFilter = this.cvb.getUpgradeable().getInstalledUpgrades(Upgrades.NBT_FILTER) != 0;
 
         this.fuzzyMode.setVisibility(hasFuzzy);
         this.oreFilter.setVisibility(hasOreFilter);
         this.oreFilter.xPosition = this.guiLeft - 18 - (hasFuzzy ? 20 : 0);
+        this.nbtFilter.setVisibility(hasNBTFilter);
+        this.nbtFilter.xPosition = this.guiLeft - 18 - (hasFuzzy ? 20 : 0) - (hasOreFilter ? 20 : 0);
         this.cellRestriction.setVisibility(this.workbench.haveCellRestrictAble());
 
         for (VirtualMEPhantomSlot configSlot : this.configSlots) configSlot.setHidden(false);

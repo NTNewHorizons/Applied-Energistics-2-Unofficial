@@ -23,8 +23,8 @@ public class FluidCellInventoryHandler extends CellInventoryHandler<IAEFluidStac
     }
 
     @Override
-    protected void setPriorityList(boolean hasFuzzy, boolean hasOreFilter, IAEStackInventory config, FuzzyMode fzMode,
-            String oreFilter) {
+    protected void setPriorityList(boolean hasFuzzy, boolean hasOreFilter, boolean hasNBTFilter,
+            IAEStackInventory config, FuzzyMode fzMode, String oreFilter) {
         final IItemList<IAEFluidStack> priorityList = AEApi.instance().storage().createFluidList();
         for (int x = 0; x < config.getSizeInventory(); x++) {
             final IAEStack<?> aes = config.getAEStackInSlot(x);

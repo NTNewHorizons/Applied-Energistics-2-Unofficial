@@ -8,6 +8,7 @@ import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.item.ItemStack;
 
+import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
 import appeng.client.gui.GuiSub;
@@ -16,6 +17,7 @@ import appeng.container.implementations.ContainerNBTFilter;
 import appeng.core.localization.ColorUtils;
 import appeng.core.sync.network.NetworkHandler;
 import appeng.core.sync.packets.PacketNBTFilterConfig;
+import appeng.core.sync.packets.PacketSwitchGuis;
 import appeng.helpers.INBTFilterable;
 import appeng.util.nbt.NBTFilterConfig;
 import appeng.util.nbt.NBTFilterEntry;
@@ -23,7 +25,6 @@ import cpw.mods.fml.client.config.GuiButtonExt;
 
 public class GuiNBTFilter extends GuiSub {
 
-    private static final int MAX_VISIBLE_FILTERS = 25;
     private static final int BACKGROUND_COLOR = 0xFFC6C6C6;
 
     private static final int ROW_TOP = 28;
@@ -44,6 +45,7 @@ public class GuiNBTFilter extends GuiSub {
     private GuiButton copyNBTButton;
     private int observedRevision = -1;
     private boolean controlsDirty;
+    private boolean pendingTextChanges;
 
     public GuiNBTFilter(final InventoryPlayer ip, final INBTFilterable host) {
         super(new ContainerNBTFilter(ip, host));
@@ -53,6 +55,7 @@ public class GuiNBTFilter extends GuiSub {
 
     @Override
     public void initGui() {
+        this.savePendingChanges();
         this.updateGuiGeometry();
         super.initGui();
         this.rebuildControls();
@@ -79,7 +82,7 @@ public class GuiNBTFilter extends GuiSub {
                 config.getMode().name());
         this.buttonList.add(this.modeButton);
 
-        final int visibleRows = Math.min(config.getFilters().size(), MAX_VISIBLE_FILTERS);
+        final int visibleRows = Math.min(config.getFilters().size(), NBTFilterConfig.MAX_FILTERS);
         for (int i = 0; i < visibleRows; i++) this.addRowControls(i, config.getFilters().get(i));
 
         final int footerY = this.guiTop + ROW_TOP + visibleRows * ROW_HEIGHT;
@@ -95,14 +98,15 @@ public class GuiNBTFilter extends GuiSub {
                 buttonWidth,
                 20,
                 "Add Filter");
-        this.addButton.enabled = config.getFilters().size() < MAX_VISIBLE_FILTERS;
+        this.addButton.enabled = config.getFilters().size() < NBTFilterConfig.MAX_FILTERS;
         this.buttonList.add(this.addButton);
         this.observedRevision = this.containerNBTFilter.getRevision();
         this.controlsDirty = false;
     }
 
     private void updateGuiGeometry() {
-        final int visibleRows = Math.min(this.containerNBTFilter.getConfig().getFilters().size(), MAX_VISIBLE_FILTERS);
+        final int visibleRows = Math
+                .min(this.containerNBTFilter.getConfig().getFilters().size(), NBTFilterConfig.MAX_FILTERS);
         this.ySize = ROW_TOP + visibleRows * ROW_HEIGHT + FOOTER_HEIGHT;
         this.guiLeft = (this.width - this.xSize) / 2;
         this.guiTop = (this.height - this.ySize) / 2;
@@ -118,6 +122,31 @@ public class GuiNBTFilter extends GuiSub {
 
     private void configurationChanged() {
         NetworkHandler.instance.sendToServer(new PacketNBTFilterConfig(this.containerNBTFilter.getConfig()));
+        this.pendingTextChanges = false;
+    }
+
+    private void savePendingChanges() {
+        if (this.pendingTextChanges) this.configurationChanged();
+    }
+
+    private MEGuiTextField getFocusedField() {
+        for (final FilterRow row : this.rows) {
+            if (row.pathField.isFocused()) return row.pathField;
+            if (row.valueField.isFocused()) return row.valueField;
+        }
+        return null;
+    }
+
+    @Override
+    public void onGuiClosed() {
+        this.savePendingChanges();
+        super.onGuiClosed();
+    }
+
+    @Override
+    protected void closeGui() {
+        this.savePendingChanges();
+        super.closeGui();
     }
 
     @Override
@@ -202,6 +231,7 @@ public class GuiNBTFilter extends GuiSub {
 
     @Override
     protected void actionPerformed(final GuiButton button) {
+        if (button == this.originalGuiBtn) this.savePendingChanges();
         super.actionPerformed(button);
         final boolean backwards = Mouse.isButtonDown(1);
         final NBTFilterConfig config = this.containerNBTFilter.getConfig();
@@ -225,6 +255,7 @@ public class GuiNBTFilter extends GuiSub {
                     row.entry.setComparison(row.entry.getComparison().rotate(backwards));
                     row.comparisonButton.displayString = row.entry.getComparison().getDisplayName();
                     row.valueField.setEnabled(row.entry.getComparison().requiresValue());
+                    if (!row.entry.getComparison().requiresValue()) row.valueField.setFocused(false);
                     config.rebuildCompiledFilters();
                     this.configurationChanged();
                     return;
@@ -245,7 +276,7 @@ public class GuiNBTFilter extends GuiSub {
             return false;
         }
 
-        this.containerNBTFilter.getConfig().replaceWithNBT(sourceItem.getTagCompound(), MAX_VISIBLE_FILTERS);
+        this.containerNBTFilter.getConfig().replaceWithNBT(sourceItem.getTagCompound(), NBTFilterConfig.MAX_FILTERS);
         this.copyNBTButton.enabled = false;
         this.controlsDirty = true;
         this.configurationChanged();
@@ -261,21 +292,35 @@ public class GuiNBTFilter extends GuiSub {
 
     @Override
     protected void mouseClicked(final int x, final int y, final int button) {
+        final MEGuiTextField focused = this.getFocusedField();
         for (final FilterRow row : this.rows) {
             row.pathField.mouseClicked(x, y, button);
             if (row.entry.getComparison().requiresValue()) row.valueField.mouseClicked(x, y, button);
         }
         super.mouseClicked(x, y, button);
+        if (focused != this.getFocusedField()) this.savePendingChanges();
     }
 
     @Override
     protected void keyTyped(final char character, final int key) {
+        if (key == Keyboard.KEY_RETURN || key == Keyboard.KEY_NUMPADENTER) {
+            this.savePendingChanges();
+            NetworkHandler.instance.sendToServer(new PacketSwitchGuis());
+            return;
+        }
+        final MEGuiTextField focused = this.getFocusedField();
+        boolean handled = false;
         for (final FilterRow row : this.rows) {
             if (row.pathField.textboxKeyTyped(character, key) || row.valueField.textboxKeyTyped(character, key)) {
-                return;
+                handled = true;
+                break;
             }
         }
-        super.keyTyped(character, key);
+        if (focused != this.getFocusedField()) this.savePendingChanges();
+        if (!handled) {
+            if (this.isCloseKey(key)) this.savePendingChanges();
+            super.keyTyped(character, key);
+        }
     }
 
     private final class FilterRow {
@@ -294,9 +339,10 @@ public class GuiNBTFilter extends GuiSub {
 
                 @Override
                 public void onTextChange(final String oldText) {
+                    if (this.getText().equals(oldText)) return;
                     FilterRow.this.entry.setPath(this.getText());
                     containerNBTFilter.getConfig().rebuildCompiledFilters();
-                    configurationChanged();
+                    pendingTextChanges = true;
                 }
             };
             this.pathField.x = guiLeft + BORDER_SIZE;
@@ -316,9 +362,10 @@ public class GuiNBTFilter extends GuiSub {
 
                 @Override
                 public void onTextChange(final String oldText) {
+                    if (this.getText().equals(oldText)) return;
                     FilterRow.this.entry.setValue(this.getText());
                     containerNBTFilter.getConfig().rebuildCompiledFilters();
-                    configurationChanged();
+                    pendingTextChanges = true;
                 }
             };
             this.valueField.x = this.comparisonButton.xPosition + COMPARISON_FIELD_WIDTH + PADDING;

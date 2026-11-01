@@ -16,7 +16,6 @@ import io.netty.buffer.Unpooled;
 
 public final class PacketNBTFilterConfig extends AppEngPacket {
 
-    private static final int MAX_FILTERS = 32;
     private static final int MAX_PATH_LENGTH = 256;
     private static final int MAX_VALUE_LENGTH = 1024;
 
@@ -27,7 +26,7 @@ public final class PacketNBTFilterConfig extends AppEngPacket {
         final NBTFilterMode[] modes = NBTFilterMode.values();
         this.config.setMode(modes[Math.min(modeOrdinal, modes.length - 1)]);
 
-        final int count = Math.min(stream.readUnsignedByte(), MAX_FILTERS);
+        final int count = stream.readUnsignedByte();
         final NBTComparison[] comparisons = NBTComparison.values();
         for (int i = 0; i < count; i++) {
             final String path = truncate(ByteBufUtils.readUTF8String(stream), MAX_PATH_LENGTH);
@@ -43,7 +42,7 @@ public final class PacketNBTFilterConfig extends AppEngPacket {
         final ByteBuf data = Unpooled.buffer();
         data.writeInt(this.getPacketID());
         data.writeByte(this.config.getMode().ordinal());
-        final int count = Math.min(this.config.getFilters().size(), MAX_FILTERS);
+        final int count = this.config.getFilters().size();
         data.writeByte(count);
         for (int i = 0; i < count; i++) {
             final NBTFilterEntry entry = this.config.getFilters().get(i);

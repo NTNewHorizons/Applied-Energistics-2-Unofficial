@@ -244,6 +244,7 @@ public enum GuiText implements Localization {
     Excluded,
     Partitioned,
     PartitionedOre,
+    PartitionedNBT,
     Precise,
     Fuzzy,
     Filter,

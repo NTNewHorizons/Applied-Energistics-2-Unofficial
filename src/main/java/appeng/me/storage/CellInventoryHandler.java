@@ -45,6 +45,7 @@ public abstract class CellInventoryHandler<StackType extends IAEStack<StackType>
             boolean hasInverter = false;
             boolean hasFuzzy = false;
             boolean hasOreFilter = false;
+            boolean hasNBTFilter = false;
             boolean hasSticky = false;
 
             for (int x = 0; x < upgrades.getSizeInventory(); x++) {
@@ -56,6 +57,7 @@ public abstract class CellInventoryHandler<StackType extends IAEStack<StackType>
                             case FUZZY -> hasFuzzy = true;
                             case INVERTER -> hasInverter = true;
                             case ORE_FILTER -> hasOreFilter = true;
+                            case NBT_FILTER -> hasNBTFilter = true;
                             case STICKY -> hasSticky = true;
                             default -> {}
                         }
@@ -69,12 +71,12 @@ public abstract class CellInventoryHandler<StackType extends IAEStack<StackType>
                 setSticky(true);
             }
 
-            setPriorityList(hasFuzzy, hasOreFilter, config, fzMode, filter);
+            setPriorityList(hasFuzzy, hasOreFilter, hasNBTFilter, config, fzMode, filter);
         }
     }
 
-    protected void setPriorityList(boolean hasFuzzy, boolean hasOreFilter, IAEStackInventory config, FuzzyMode fzMode,
-            String oreFilter) {}
+    protected void setPriorityList(boolean hasFuzzy, boolean hasOreFilter, boolean hasNBTFilter,
+            IAEStackInventory config, FuzzyMode fzMode, String oreFilter) {}
 
     @Override
     public ICellInventory<StackType> getCellInv() {
