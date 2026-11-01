@@ -120,4 +120,36 @@ public class NBTFilterConfigTest {
         config.addFilter(new NBTFilterEntry(path, comparison, value));
         return config;
     }
+
+    @Test
+    public void copyNbtPreservesLiteralKeysInsideCompoundsAndLists() {
+        final String[] keys = { "", " ", "0", "001", "2147483648", "a.b", "a\\b", "a\"b", "a.\\\"b", "ordinary" };
+        final NBTTagCompound nested = new NBTTagCompound();
+        for (final String key : keys) nested.setInteger(key, 7);
+        final NBTTagList list = new NBTTagList();
+        list.appendTag(nested.copy());
+        final NBTTagCompound root = new NBTTagCompound();
+        root.setTag("compound.with.dots", nested);
+        root.setTag("list\\name", list);
+        root.setTag("empty.compound", new NBTTagCompound());
+        root.setTag("empty.list", new NBTTagList());
+
+        final NBTFilterConfig generated = new NBTFilterConfig();
+        generated.replaceWithNBT(root, 25);
+        assertEquals(keys.length * 2 + 2, generated.getFilters().size());
+        assertTrue(generated.matches(root));
+
+        final NBTTagCompound saved = new NBTTagCompound();
+        generated.writeToNBT(saved);
+        final NBTFilterConfig restored = new NBTFilterConfig();
+        restored.readFromNBT(saved);
+        assertTrue(restored.matches(root));
+        for (final NBTTagCompound compound : new NBTTagCompound[] { nested, list.getCompoundTagAt(0) }) {
+            for (final String key : keys) {
+                compound.setInteger(key, 8);
+                assertFalse(key, restored.matches(root));
+                compound.setInteger(key, 7);
+            }
+        }
+    }
 }

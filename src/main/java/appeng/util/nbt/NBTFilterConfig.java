@@ -95,7 +95,7 @@ public final class NBTFilterConfig {
         Collections.sort(keys);
         for (final String key : keys) {
             if (this.filters.size() >= maxFilters) return;
-            final String path = parentPath.isEmpty() ? key : parentPath + '.' + key;
+            final String path = NBTPath.appendCompoundKey(parentPath, key);
             this.addFiltersFromTag(root, compound.getTag(key), path, maxFilters);
         }
     }
