@@ -2,6 +2,7 @@ package appeng.client.gui.implementations;
 
 import java.io.IOException;
 
+import net.minecraft.client.gui.GuiButton;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.oredict.OreDictionary;
@@ -29,6 +30,7 @@ public class GuiOreFilter extends GuiSub implements IDropToFillTextField {
 
     private boolean useNEIFilter = false;
     private long lastclicktime;
+    private boolean pendingTextChanges;
 
     public GuiOreFilter(InventoryPlayer ip, IOreFilterable obj) {
         super(new ContainerOreFilter(ip, obj));
@@ -42,6 +44,7 @@ public class GuiOreFilter extends GuiSub implements IDropToFillTextField {
 
                 if (!text.equals(oldText)) {
                     ((ContainerOreFilter) inventorySlots).setFilter(text);
+                    pendingTextChanges = true;
                     if (GuiOreFilter.this.useNEIFilter) {
                         NEI.searchField.updateFilter();
                     }
@@ -67,12 +70,35 @@ public class GuiOreFilter extends GuiSub implements IDropToFillTextField {
 
     @Override
     public void onGuiClosed() {
+        this.savePendingChanges();
         super.onGuiClosed();
 
         if (this.useNEIFilter) {
             this.useNEIFilter = false;
             NEI.searchField.updateFilter();
         }
+    }
+
+    private void savePendingChanges() {
+        if (!this.pendingTextChanges) return;
+        try {
+            NetworkHandler.instance.sendToServer(new PacketValueConfig("OreFilter", this.textField.getText()));
+            this.pendingTextChanges = false;
+        } catch (IOException e) {
+            AELog.debug(e);
+        }
+    }
+
+    @Override
+    protected void actionPerformed(final GuiButton button) {
+        this.savePendingChanges();
+        super.actionPerformed(button);
+    }
+
+    @Override
+    protected void closeGui() {
+        this.savePendingChanges();
+        super.closeGui();
     }
 
     public String getText() {
@@ -135,22 +161,21 @@ public class GuiOreFilter extends GuiSub implements IDropToFillTextField {
             lastclicktime = System.currentTimeMillis();
         }
 
+        final boolean wasFocused = this.textField.isFocused();
         this.textField.mouseClicked(xCoord, yCoord, btn);
+        if (wasFocused && !this.textField.isFocused()) this.savePendingChanges();
         super.mouseClicked(xCoord, yCoord, btn);
     }
 
     @Override
     protected void keyTyped(final char character, final int key) {
         if (key == Keyboard.KEY_RETURN || key == Keyboard.KEY_NUMPADENTER) {
-            try {
-                NetworkHandler.instance.sendToServer(new PacketValueConfig("OreFilter", this.textField.getText()));
-            } catch (IOException e) {
-                AELog.debug(e);
-            }
+            this.savePendingChanges();
 
             NetworkHandler.instance.sendToServer(new PacketSwitchGuis());
 
         } else if (!this.textField.textboxKeyTyped(character, key)) {
+            if (!this.textField.isFocused() || this.isCloseKey(key)) this.savePendingChanges();
             super.keyTyped(character, key);
         }
     }
