@@ -25,6 +25,8 @@ import appeng.items.contents.CellUpgrades;
 import appeng.me.storage.CellInventoryHandler;
 import appeng.me.storage.VoidCellInventory;
 import appeng.tile.inventory.IAEStackInventory;
+import appeng.util.nbt.NBTFilterConfig;
+import appeng.util.prioitylist.CombinedItemFilter;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
@@ -46,9 +48,13 @@ public class ItemVoidStorageCell extends AEBaseItem implements ICellWorkbenchIte
                     .getCell(stack, cell.getStackType());
             if (inv != null && inv.isPreformatted()) {
                 String filter = cell.getOreFilter(stack);
-                if (filter.isEmpty()) {
-                    final String list = (inv.getWhitelist() == IncludeExclude.WHITELIST ? GuiText.Included
-                            : GuiText.Excluded).getLocal();
+                final CombinedItemFilter combinedFilter = inv.getPartitionList() instanceof CombinedItemFilter combined
+                        ? combined
+                        : null;
+                final NBTFilterConfig nbtFilter = combinedFilter == null ? null : combinedFilter.getNBTFilterConfig();
+                final String list = (inv.getWhitelist() == IncludeExclude.WHITELIST ? GuiText.Included
+                        : GuiText.Excluded).getLocal();
+                if (!cell.getConfigAEInventory(stack).isEmpty()) {
                     if (inv.isFuzzy()) {
                         lines.add(GuiText.Partitioned.getLocal() + " - " + list + ' ' + GuiText.Fuzzy.getLocal());
                     } else {
@@ -61,8 +67,18 @@ public class ItemVoidStorageCell extends AEBaseItem implements ICellWorkbenchIte
                             if (s != null) lines.add(s.getDisplayName());
                         }
                     }
-                } else {
-                    lines.add(GuiText.PartitionedOre.getLocal() + " : " + filter);
+                }
+                if (combinedFilter != null && combinedFilter.hasOreFilter()) {
+                    lines.add(
+                            GuiText.PartitionedOre.getLocal() + " : "
+                                    + (filter.trim().isEmpty() ? GuiText.Empty.getLocal() : filter));
+                }
+                if (nbtFilter != null) {
+                    lines.add(
+                            GuiText.Partitioned.getLocal() + " - "
+                                    + list
+                                    + ' '
+                                    + GuiText.PartitionedNBT.getLocal(nbtFilter.getFilters().size()));
                 }
                 if (inv.getSticky()) {
                     lines.add(GuiText.Sticky.getLocal());

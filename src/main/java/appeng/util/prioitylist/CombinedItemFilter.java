@@ -87,6 +87,15 @@ public final class CombinedItemFilter implements IPartitionList<IAEItemStack> {
         return this.fuzzyMode != null && !this.items.isEmpty();
     }
 
+    public boolean hasOreFilter() {
+        return this.hasOreFilter;
+    }
+
+    @Nullable
+    public NBTFilterConfig getNBTFilterConfig() {
+        return this.nbtFilter == null ? null : this.nbtFilter.copy();
+    }
+
     @Override
     public Iterable<IAEItemStack> getItems() {
         return Collections.unmodifiableList(this.items);
